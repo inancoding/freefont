@@ -27,7 +27,7 @@
       <el-main class="p-0">
         <router-view />
       </el-main>
-      <el-footer class="!h-auto py-12 bg-gray-900 text-gray-300 shrink-0">
+      <el-footer class="!h-auto py-6 bg-gray-900 text-gray-300 shrink-0">
         <div class="max-w-7xl mx-auto px-4">
           <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
@@ -36,7 +36,7 @@
                 <span class="text-2xl" style="color: #2563EB">font</span>
               </div>
               <p class="text-sm text-gray-400 leading-relaxed">
-                免费字体收录 —— 收录授权明确允许免费使用的字体
+                收录授权明确允许免费使用的字体
               </p>
               <p class="text-xs text-gray-500 mt-3">
                 使用前请阅读各字体对应的授权协议。<br/>字体版权归原作者或厂商所有。
