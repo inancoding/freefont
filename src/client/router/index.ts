@@ -9,19 +9,14 @@ export const router = createRouter({
       component: () => import('../pages/Home.vue'),
     },
     {
+      path: '/fonts',
+      name: 'fonts',
+      component: () => import('../pages/FontsList.vue'),
+    },
+    {
       path: '/fonts/:slug',
       name: 'font-detail',
       component: () => import('../pages/FontDetail.vue'),
-    },
-    {
-      path: '/licenses',
-      name: 'licenses',
-      component: () => import('../pages/LicenseList.vue'),
-    },
-    {
-      path: '/about',
-      name: 'about',
-      component: () => import('../pages/About.vue'),
     },
   ],
 });

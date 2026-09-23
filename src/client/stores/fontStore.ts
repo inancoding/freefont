@@ -32,6 +32,11 @@ export const useFontStore = defineStore('fonts', () => {
     fetchFonts();
   }
 
+  function setPageSize(size: number) {
+    params.value.pageSize = size;
+    params.value.page = 1;
+  }
+
   function setSearch(search: string) {
     if (search) params.value.search = search;
     else delete params.value.search;
@@ -49,8 +54,17 @@ export const useFontStore = defineStore('fonts', () => {
   function setSort(sort: string, order: string) {
     params.value.sort = sort as NonNullable<FontListParams['sort']>;
     params.value.order = order as NonNullable<FontListParams['order']>;
-    fetchFonts();
+    params.value.page = 1;
   }
 
-  return { fonts, total, loading, params, totalPages, fetchFonts, setPage, setSearch, setFilter, setSort };
+  function resetFilters() {
+    params.value = {
+      page: 1,
+      pageSize: 20,
+      sort: 'added_at',
+      order: 'desc',
+    };
+  }
+
+  return { fonts, total, loading, params, totalPages, fetchFonts, setPage, setPageSize, setSearch, setFilter, setSort, resetFilters };
 });

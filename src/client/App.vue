@@ -8,9 +8,8 @@
         </router-link>
         <div class="flex items-center gap-4">
           <el-menu :default-active="route.path" mode="horizontal" :ellipsis="false" router class="!border-b-0">
-            <el-menu-item index="/">字体</el-menu-item>
-            <el-menu-item index="/licenses">协议</el-menu-item>
-            <el-menu-item index="/about">关于</el-menu-item>
+            <el-menu-item index="/">首页</el-menu-item>
+            <el-menu-item index="/fonts">免费字体</el-menu-item>
           </el-menu>
           <el-input
             :model-value="searchValue"
@@ -24,7 +23,7 @@
         </div>
       </div>
     </el-header>
-    <el-scrollbar class="flex-1">
+    <el-scrollbar ref="scrollbarRef" class="flex-1">
       <el-main class="p-0">
         <router-view />
       </el-main>
@@ -47,9 +46,8 @@
             <div>
               <h4 class="text-white font-medium mb-3">快速链接</h4>
               <ul class="space-y-2 text-sm">
-                <li><router-link to="/" class="hover:text-white transition-colors">字体列表</router-link></li>
-                <li><router-link to="/licenses" class="hover:text-white transition-colors">授权协议</router-link></li>
-                <li><router-link to="/about" class="hover:text-white transition-colors">关于我们</router-link></li>
+                <li><router-link to="/" class="hover:text-white transition-colors">首页</router-link></li>
+                <li><router-link to="/fonts" class="hover:text-white transition-colors">免费字体</router-link></li>
               </ul>
             </div>
 
@@ -81,7 +79,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, watch, onMounted, onUnmounted, nextTick } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { Search } from '@element-plus/icons-vue';
 import { useFontStore } from './stores/fontStore.ts';
@@ -93,13 +91,48 @@ const searchValue = ref(store.params.search || '');
 
 let searchTimer: ReturnType<typeof setTimeout> | null = null;
 
+const scrollbarRef = ref<any>(null);
+
+function onScrollbarScroll() {
+  if (route.path !== '/fonts') return;
+  const wrap = scrollbarRef.value?.wrapRef
+    || scrollbarRef.value?.$el?.querySelector('.el-scrollbar__wrap')
+    || document.querySelector('.el-scrollbar .el-scrollbar__wrap');
+  if (!wrap) return;
+  const { scrollTop, scrollHeight, clientHeight } = wrap;
+  const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+  if (distanceFromBottom < 100) {
+    window.dispatchEvent(new CustomEvent('fonts-load-more'));
+  }
+}
+
+onMounted(() => {
+  nextTick(() => {
+    const wrap = scrollbarRef.value?.wrapRef
+      || scrollbarRef.value?.$el?.querySelector('.el-scrollbar__wrap')
+      || document.querySelector('.el-scrollbar .el-scrollbar__wrap');
+    if (wrap) {
+      wrap.addEventListener('scroll', onScrollbarScroll);
+    }
+  });
+});
+
+onUnmounted(() => {
+  const wrap = scrollbarRef.value?.wrapRef
+    || scrollbarRef.value?.$el?.querySelector('.el-scrollbar__wrap')
+    || document.querySelector('.el-scrollbar .el-scrollbar__wrap');
+  if (wrap) {
+    wrap.removeEventListener('scroll', onScrollbarScroll);
+  }
+});
+
 function onSearchInput(val: string | number) {
   const v = String(val);
   searchValue.value = v;
   if (searchTimer) clearTimeout(searchTimer);
   searchTimer = setTimeout(() => {
     store.setSearch(v);
-    if (route.path !== '/') router.push('/');
+    if (route.path !== '/fonts') router.push('/fonts');
   }, 300);
 }
 
