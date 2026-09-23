@@ -1,5 +1,5 @@
 <template>
-  <div class="max-w-7xl mx-auto px-4 py-8">
+  <div class="max-w-7xl mx-auto py-8">
     <!-- 轮播图占位 -->
     <div class="mb-6">
       <el-carousel height="200px" :interval="5000" arrow="always">

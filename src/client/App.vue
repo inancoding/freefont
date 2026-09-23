@@ -7,6 +7,11 @@
           <span class="text-2xl" style="color: #2563EB">font</span>
         </router-link>
         <div class="flex items-center gap-4">
+          <el-menu :default-active="route.path" mode="horizontal" :ellipsis="false" router class="!border-b-0">
+            <el-menu-item index="/">字体</el-menu-item>
+            <el-menu-item index="/licenses">协议</el-menu-item>
+            <el-menu-item index="/about">关于</el-menu-item>
+          </el-menu>
           <el-input
             :model-value="searchValue"
             placeholder="搜索字体..."
@@ -16,11 +21,6 @@
             class="w-64"
             @update:model-value="onSearchInput"
           />
-          <el-menu :default-active="route.path" mode="horizontal" :ellipsis="false" router class="!border-b-0">
-            <el-menu-item index="/">字体</el-menu-item>
-            <el-menu-item index="/licenses">协议</el-menu-item>
-            <el-menu-item index="/about">关于</el-menu-item>
-          </el-menu>
         </div>
       </div>
     </el-header>
