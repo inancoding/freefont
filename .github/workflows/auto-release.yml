@@ -1,0 +1,68 @@
+name: Auto Release
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect changed ZIPs
+        id: detect
+        run: |
+          BASE="${{ github.event.workflow_run.head_commit.tree_id }}"
+          # Compare with previous commit to find changed ZIPs
+          CHANGED=$(git diff --name-only HEAD~1 HEAD -- 'zips/*.zip' || true)
+          if [ -z "$CHANGED" ]; then
+            echo "No ZIP changes detected, skipping"
+            echo "has_changes=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_changes=true" >> "$GITHUB_OUTPUT"
+            echo "files<<EOF" >> "$GITHUB_OUTPUT"
+            echo "$CHANGED" >> "$GITHUB_OUTPUT"
+            echo "EOF" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create tags and releases
+        if: steps.detect.outputs.has_changes == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Parse slug and version from filename: zips/<slug>-<version>.zip
+          echo "${{ steps.detect.outputs.files }}" | while IFS= read -r file; do
+            [ -z "$file" ] && continue
+            basename=$(basename "$file" .zip)
+            # Extract version (last segment after -)
+            version="${basename##*-}"
+            slug="${basename%-$version}"
+            tag="${slug}-v${version}"
+
+            # Skip if tag already exists
+            if git ls-remote --tags origin | grep -q "refs/tags/${tag}$"; then
+              echo "Tag ${tag} already exists, skipping"
+              continue
+            fi
+
+            # Create tag
+            git tag "$tag"
+            git push origin "$tag"
+
+            # Create release
+            gh release create "$tag" \
+              --title "${slug} v${version}" \
+              --notes "Automated release for ${slug} v${version}" \
+              "$file"
+
+            echo "Created release: ${tag}"
+          done

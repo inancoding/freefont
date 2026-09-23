@@ -1,0 +1,52 @@
+{
+  "name": "free-font",
+  "version": "3.0.0",
+  "private": true,
+  "type": "module",
+  "description": "开源免费字体聚合站 —— Vue 3 + Node.js + SQLite 全栈",
+  "license": "CC0-1.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "concurrently -n server,vite -c blue,green \"npm run dev:server\" \"npm run dev:client\"",
+    "dev:server": "tsx watch src/server/index.ts",
+    "dev:client": "vite",
+    "build": "npm run build:client && npm run build:server",
+    "build:client": "vite build",
+    "build:server": "tsc -p tsconfig.server.json",
+    "start": "node dist/server/index.js",
+    "db:migrate": "tsx db/migrate.ts",
+    "db:reset": "rm -f db/free-font.db && tsx db/migrate.ts",
+    "typecheck": "vue-tsc --noEmit && tsc --noEmit -p tsconfig.server.json"
+  },
+  "dependencies": {
+    "@element-plus/icons-vue": "^2.3.2",
+    "@octokit/rest": "^21.0.0",
+    "element-plus": "^2.14.6",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "multer": "^2.0.0",
+    "sql.js": "^1.11.0",
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/jsonwebtoken": "^9.0.9",
+    "@types/multer": "^2.2.0",
+    "@types/node": "^26.5.1",
+    "@vitejs/plugin-vue": "^5.2.0",
+    "autoprefixer": "^10.4.20",
+    "concurrently": "^9.1.0",
+    "md-editor-v3": "^5.0.0",
+    "pinia": "^3.0.0",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.17",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3",
+    "vite": "^6.0.0",
+    "vue": "^3.5.0",
+    "vue-router": "^4.5.0",
+    "vue-tsc": "^2.2.0"
+  }
+}
