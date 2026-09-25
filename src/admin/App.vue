@@ -2,18 +2,22 @@
   <el-container class="h-screen">
     <template v-if="route.path !== '/login'">
       <el-aside width="220px" class="bg-[#1A1A2E] flex flex-col shrink-0">
-        <router-link to="/fonts" class="flex items-center justify-center h-14 shrink-0" style="font-family: 'Inter', sans-serif; font-weight: 700;">
+        <a href="/" class="flex items-center justify-center h-14 shrink-0" style="font-family: 'Inter', sans-serif; font-weight: 700;">
           <span class="text-xl" style="color: #fff">free</span>
           <span class="text-xl" style="color: #60A5FA">font</span>
-        </router-link>
+        </a>
         <el-menu
           :default-active="route.path"
           background-color="#1A1A2E"
           text-color="#9CA3AF"
           active-text-color="#60A5FA"
-          router
           class="admin-sidebar !border-r-0 flex-1"
+          @select="onMenuSelect"
         >
+          <el-menu-item index="/">
+            <el-icon><HomeFilled /></el-icon>
+            <span>网站首页</span>
+          </el-menu-item>
           <el-menu-item index="/fonts">
             <el-icon><Files /></el-icon>
             <span>字体管理</span>
@@ -51,6 +55,14 @@ import { setToken } from './utils/api.ts';
 
 const route = useRoute();
 const router = useRouter();
+
+function onMenuSelect(index: string) {
+  if (index === '/') {
+    window.location.href = '/';
+  } else {
+    router.push(index);
+  }
+}
 
 function onLogout() {
   setToken(null);
