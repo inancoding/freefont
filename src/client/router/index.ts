@@ -38,5 +38,10 @@ export const router = createRouter({
       name: 'about',
       component: () => import('../pages/About.vue'),
     },
+    {
+      path: '/font-assistant',
+      name: 'font-assistant',
+      component: () => import('../pages/FontAssistant.vue'),
+    },
   ],
 });

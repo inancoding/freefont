@@ -10,6 +10,7 @@
           <el-menu :default-active="route.path" mode="horizontal" :ellipsis="false" router class="!border-b-0">
             <el-menu-item index="/">首页</el-menu-item>
             <el-menu-item index="/fonts">免费字体</el-menu-item>
+            <el-menu-item index="/font-assistant">字体助手</el-menu-item>
             <el-menu-item index="/creators">字体创作者</el-menu-item>
             <el-menu-item index="/download">全站下载</el-menu-item>
             <el-menu-item index="/submit">字体提交</el-menu-item>
@@ -103,6 +104,7 @@
                 <li><router-link to="/download" class="hover:text-white transition-colors">全站下载</router-link></li>
                 <li><router-link to="/submit" class="hover:text-white transition-colors">字体提交</router-link></li>
                 <li><router-link to="/about" class="hover:text-white transition-colors">关于我们</router-link></li>
+                <li><router-link to="/font-assistant" class="hover:text-white transition-colors">字体助手</router-link></li>
               </ul>
             </div>
 
