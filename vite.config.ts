@@ -1,9 +1,32 @@
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import { resolve } from 'node:path';
+import { readFileSync } from 'node:fs';
 
 export default defineConfig({
-  plugins: [vue()],
+  plugins: [
+    vue(),
+    {
+      name: 'admin-mpa-dev',
+      configureServer(server) {
+        server.middlewares.use((req, res, next) => {
+          const url = req.url || '';
+          if (url === '/admin' || url.startsWith('/admin/')) {
+            const lastSegment = url.split('/').pop() || '';
+            const hasExt = lastSegment.includes('.');
+            if (!hasExt) {
+              const html = readFileSync(resolve(__dirname, 'admin/index.html'), 'utf-8');
+              res.setHeader('Content-Type', 'text/html');
+              res.setHeader('Cache-Control', 'no-store');
+              res.end(html);
+              return;
+            }
+          }
+          next();
+        });
+      },
+    },
+  ],
   resolve: {
     alias: {
       '@shared': resolve(__dirname, 'src/shared'),

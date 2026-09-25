@@ -1,26 +1,68 @@
 <template>
-  <el-container class="min-h-screen">
-    <el-header class="!h-14 flex items-center border-b border-gray-200 bg-white px-4">
-      <div class="w-full max-w-7xl mx-auto flex items-center gap-6">
-        <router-link to="/" class="flex items-center" style="font-family: 'Inter', sans-serif; font-weight: 700;">
-          <span class="text-xl" style="color: #1A1A2E">free</span>
-          <span class="text-xl" style="color: #2563EB">font</span>
+  <el-container class="h-screen">
+    <template v-if="route.path !== '/login'">
+      <el-aside width="220px" class="bg-[#1A1A2E] flex flex-col shrink-0">
+        <router-link to="/fonts" class="flex items-center justify-center h-14 shrink-0" style="font-family: 'Inter', sans-serif; font-weight: 700;">
+          <span class="text-xl" style="color: #fff">free</span>
+          <span class="text-xl" style="color: #60A5FA">font</span>
         </router-link>
-        <el-menu :default-active="route.path" mode="horizontal" :ellipsis="false" router class="!border-b-0">
-          <el-menu-item index="/fonts">字体管理</el-menu-item>
-          <el-menu-item index="/licenses">许可管理</el-menu-item>
-          <el-menu-item index="/banners">轮播图管理</el-menu-item>
+        <el-menu
+          :default-active="route.path"
+          background-color="#1A1A2E"
+          text-color="#9CA3AF"
+          active-text-color="#60A5FA"
+          router
+          class="admin-sidebar !border-r-0 flex-1"
+        >
+          <el-menu-item index="/fonts">
+            <el-icon><Files /></el-icon>
+            <span>字体管理</span>
+          </el-menu-item>
+          <el-menu-item index="/licenses">
+            <el-icon><Document /></el-icon>
+            <span>许可管理</span>
+          </el-menu-item>
+          <el-menu-item index="/banners">
+            <el-icon><Picture /></el-icon>
+            <span>轮播图管理</span>
+          </el-menu-item>
         </el-menu>
-      </div>
-    </el-header>
-    <el-main class="bg-gray-50">
+        <div class="px-4 pb-4 shrink-0">
+          <el-popconfirm title="确定要退出登录吗？" confirm-button-text="确定" cancel-button-text="取消" @confirm="onLogout">
+            <template #reference>
+              <div class="flex items-center justify-center gap-2 py-2.5 rounded-lg cursor-pointer text-gray-400 hover:text-white hover:bg-white/8 transition-colors">
+                <el-icon><SwitchButton /></el-icon>
+                <span class="text-sm">退出登录</span>
+              </div>
+            </template>
+          </el-popconfirm>
+        </div>
+      </el-aside>
+    </template>
+    <el-main class="bg-gray-50 p-6 overflow-auto">
       <router-view />
     </el-main>
   </el-container>
 </template>
 
 <script setup lang="ts">
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
+import { setToken } from './utils/api.ts';
 
 const route = useRoute();
+const router = useRouter();
+
+function onLogout() {
+  setToken(null);
+  router.push('/login');
+}
 </script>
+
+<style>
+.admin-sidebar .el-menu-item:hover {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+}
+.admin-sidebar .el-menu-item.is-active {
+  background-color: rgba(96, 165, 250, 0.15) !important;
+}
+</style>

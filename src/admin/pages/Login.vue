@@ -5,10 +5,10 @@
         <h1 class="text-xl font-bold text-center">管理后台登录</h1>
       </template>
       <el-form @submit.prevent="onLogin">
-        <el-form-item label="用户名">
+        <el-form-item label="用户名：">
           <el-input v-model="username" placeholder="请输入用户名" />
         </el-form-item>
-        <el-form-item label="密码">
+        <el-form-item label="密　码：">
           <el-input v-model="password" type="password" placeholder="请输入密码" show-password />
         </el-form-item>
         <el-alert v-if="error" :title="error" type="error" :closable="false" class="mb-4" />
