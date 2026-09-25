@@ -81,9 +81,23 @@ CREATE TABLE IF NOT EXISTS users (
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
+-- 轮播图表
+CREATE TABLE IF NOT EXISTS banners (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  title TEXT NOT NULL,
+  description TEXT,
+  image_path TEXT NOT NULL,
+  link_url TEXT,
+  sort_order INTEGER NOT NULL DEFAULT 0,
+  is_active INTEGER NOT NULL DEFAULT 1,
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  updated_at TEXT
+);
+
 -- 索引
 CREATE INDEX IF NOT EXISTS idx_fonts_category ON fonts(category);
 CREATE INDEX IF NOT EXISTS idx_fonts_license ON fonts(license_id);
 CREATE INDEX IF NOT EXISTS idx_fonts_added_at ON fonts(added_at);
 CREATE INDEX IF NOT EXISTS idx_font_tags_tag ON font_tags(tag);
 CREATE INDEX IF NOT EXISTS idx_font_languages_lang ON font_languages(language);
+CREATE INDEX IF NOT EXISTS idx_banners_active_sort ON banners(is_active, sort_order);

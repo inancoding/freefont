@@ -57,17 +57,30 @@ export const adminApi = {
   updateLicense: (id: string, data: Partial<import('@shared/types/index.ts').License>) =>
     request<import('@shared/types/index.ts').License>(`/admin/licenses/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
 
-  uploadImage: (file: File) => {
+  uploadImage: (file: File, subfolder?: string) => {
     const fd = new FormData();
+    if (subfolder) fd.append('subfolder', subfolder);
     fd.append('file', file);
     return upload<import('@shared/types/index.ts').UploadImageResponse>('/admin/upload/image', fd);
   },
 
   uploadZip: (file: File, slug: string, version: string) => {
     const fd = new FormData();
-    fd.append('file', file);
     fd.append('slug', slug);
     fd.append('version', version);
+    fd.append('file', file);
     return upload<import('@shared/types/index.ts').UploadZipResponse>('/admin/upload/zip', fd);
   },
+
+  getBanners: () =>
+    request<import('@shared/types/index.ts').Banner[]>('/admin/banners'),
+
+  createBanner: (data: import('@shared/types/index.ts').BannerFormData) =>
+    request<import('@shared/types/index.ts').Banner>('/admin/banners', { method: 'POST', body: JSON.stringify(data) }),
+
+  updateBanner: (id: number, data: Partial<import('@shared/types/index.ts').BannerFormData>) =>
+    request<import('@shared/types/index.ts').Banner>(`/admin/banners/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+
+  deleteBanner: (id: number) =>
+    request<{ deleted: boolean }>(`/admin/banners/${id}`, { method: 'DELETE' }),
 };

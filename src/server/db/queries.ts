@@ -393,3 +393,102 @@ export async function getDownloadCount(slug: string): Promise<number> {
   const row = await getRow<{ count: number }>('SELECT count FROM downloads WHERE slug = ?', [slug]);
   return row?.count ?? 0;
 }
+
+export interface BannerRow {
+  id: number;
+  title: string;
+  description: string | null;
+  image_path: string;
+  link_url: string | null;
+  sort_order: number;
+  is_active: number;
+  created_at: string;
+  updated_at: string | null;
+}
+
+function toCamelBanner(row: BannerRow) {
+  return {
+    id: row.id,
+    title: row.title,
+    description: row.description,
+    imagePath: row.image_path,
+    linkUrl: row.link_url,
+    sortOrder: row.sort_order,
+    isActive: !!row.is_active,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+export async function findBanners() {
+  const rows = await allRows<BannerRow>('SELECT * FROM banners ORDER BY sort_order ASC, id ASC');
+  return rows.map(toCamelBanner);
+}
+
+export async function findActiveBanners() {
+  const rows = await allRows<BannerRow>('SELECT * FROM banners WHERE is_active = 1 ORDER BY sort_order ASC, id ASC');
+  return rows.map(toCamelBanner);
+}
+
+export async function findBannerById(id: number) {
+  const row = await getRow<BannerRow>('SELECT * FROM banners WHERE id = ?', [id]);
+  if (!row) return null;
+  return toCamelBanner(row);
+}
+
+export interface CreateBannerData {
+  title: string;
+  description?: string;
+  imagePath: string;
+  linkUrl?: string;
+  sortOrder?: number;
+  isActive?: boolean;
+}
+
+export async function createBanner(data: CreateBannerData) {
+  await runQuery(`
+    INSERT INTO banners (title, description, image_path, link_url, sort_order, is_active)
+    VALUES (?, ?, ?, ?, ?, ?)
+  `, [
+    data.title,
+    data.description ?? null,
+    data.imagePath,
+    data.linkUrl ?? null,
+    data.sortOrder ?? 0,
+    data.isActive !== false ? 1 : 0,
+  ]);
+  await saveDb();
+  const row = await getRow<BannerRow>('SELECT * FROM banners WHERE id = last_insert_rowid()');
+  return row ? toCamelBanner(row) : null;
+}
+
+export async function updateBanner(id: number, data: Partial<CreateBannerData>) {
+  const existing = await findBannerById(id);
+  if (!existing) return null;
+
+  const fields: string[] = [];
+  const values: unknown[] = [];
+
+  if (data.title !== undefined) { fields.push('title = ?'); values.push(data.title); }
+  if (data.description !== undefined) { fields.push('description = ?'); values.push(data.description ?? null); }
+  if (data.imagePath !== undefined) { fields.push('image_path = ?'); values.push(data.imagePath); }
+  if (data.linkUrl !== undefined) { fields.push('link_url = ?'); values.push(data.linkUrl ?? null); }
+  if (data.sortOrder !== undefined) { fields.push('sort_order = ?'); values.push(data.sortOrder); }
+  if (data.isActive !== undefined) { fields.push('is_active = ?'); values.push(data.isActive ? 1 : 0); }
+
+  if (fields.length > 0) {
+    fields.push("updated_at = datetime('now')");
+    values.push(id);
+    await runQuery(`UPDATE banners SET ${fields.join(', ')} WHERE id = ?`, values);
+    await saveDb();
+  }
+  return findBannerById(id);
+}
+
+export async function deleteBanner(id: number) {
+  const existing = await findBannerById(id);
+  if (!existing) return false;
+  await runQuery('DELETE FROM banners WHERE id = ?', [id]);
+  await saveDb();
+  return true;
+}

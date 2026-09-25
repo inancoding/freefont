@@ -6,8 +6,10 @@ import { errorHandler, notFound } from './middleware/error-handler.js';
 import { loginHandler } from './auth/middleware.js';
 import { fontRouter } from './api/fonts.js';
 import { licenseRouter } from './api/licenses.js';
+import { bannerRouter } from './api/banners.js';
 import { adminFontRouter } from './api/admin/fonts.js';
 import { adminLicenseRouter } from './api/admin/licenses.js';
+import { adminBannerRouter } from './api/admin/banners.js';
 import { uploadRouter } from './api/admin/upload.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -35,8 +37,10 @@ app.use('/images', express.static(join(ROOT, 'public', 'images')));
 app.post('/api/auth/login', loginHandler);
 app.use('/api/fonts', fontRouter);
 app.use('/api/licenses', licenseRouter);
+app.use('/api/banners', bannerRouter);
 app.use('/api/admin/fonts', adminFontRouter);
 app.use('/api/admin/licenses', adminLicenseRouter);
+app.use('/api/admin/banners', adminBannerRouter);
 app.use('/api/admin/upload', uploadRouter);
 
 const distPath = join(ROOT, 'dist');

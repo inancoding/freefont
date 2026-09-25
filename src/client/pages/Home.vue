@@ -1,12 +1,17 @@
 <template>
   <div class="max-w-7xl mx-auto py-8">
-    <!-- 轮播图占位 -->
-    <div class="mb-6">
+    <!-- 轮播图 -->
+    <div class="mb-6" v-if="banners.length > 0">
       <el-carousel height="300px" :interval="5000" arrow="always">
-        <el-carousel-item v-for="item in 3" :key="item">
-          <div class="h-full flex items-center justify-center bg-gradient-to-r from-blue-100 to-purple-100">
-            <span class="text-2xl text-gray-400">轮播图 {{ item }} - 待填充</span>
-          </div>
+        <el-carousel-item v-for="banner in banners" :key="banner.id">
+          <a
+            :href="banner.linkUrl || undefined"
+            :target="banner.linkUrl ? '_blank' : undefined"
+            :rel="banner.linkUrl ? 'noopener noreferrer' : undefined"
+            :class="['block h-full', banner.linkUrl ? 'cursor-pointer' : 'cursor-default']"
+          >
+            <img :src="banner.imagePath" :alt="banner.title" class="w-full h-full object-cover" />
+          </a>
         </el-carousel-item>
       </el-carousel>
     </div>
@@ -33,17 +38,26 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import { ArrowRight } from '@element-plus/icons-vue';
 import { useFontStore } from '../stores/fontStore.ts';
 import FontCard from '../components/FontCard.vue';
+import { api } from '../utils/api.ts';
+import type { Banner } from '@shared/types/index.ts';
 
 const store = useFontStore();
+const banners = ref<Banner[]>([]);
 
-onMounted(() => {
+onMounted(async () => {
   store.resetFilters();
   store.setSort('download_count', 'desc');
   store.setPageSize(24);
   store.fetchFonts();
+
+  try {
+    banners.value = await api.getBanners();
+  } catch {
+    // 轮播图加载失败不影响页面
+  }
 });
 </script>

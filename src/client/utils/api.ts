@@ -29,4 +29,6 @@ export const api = {
   getLicenses: () => request<import('@shared/types/index.ts').License[]>('/licenses'),
 
   getLicense: (id: string) => request<import('@shared/types/index.ts').License>(`/licenses/${id}`),
+
+  getBanners: () => request<import('@shared/types/index.ts').Banner[]>('/banners'),
 };

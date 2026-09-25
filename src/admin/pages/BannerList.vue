@@ -63,8 +63,10 @@
             :on-change="handleImageChange"
             accept="image/*"
             :show-file-list="false"
+            :disabled="uploading"
           >
             <img v-if="form.imagePath" :src="form.imagePath" class="banner-preview" />
+            <div v-else-if="uploading" v-loading="true" class="w-full h-full" />
             <el-icon v-else class="banner-uploader-icon"><Plus /></el-icon>
           </el-upload>
           <p class="text-xs text-gray-500 mt-2">建议尺寸：1200x300px，支持 JPG/PNG 格式</p>
@@ -103,24 +105,17 @@
 import { ref, onMounted } from 'vue';
 import { Plus } from '@element-plus/icons-vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
-
-interface Banner {
-  id?: number;
-  title: string;
-  description: string;
-  imagePath: string;
-  linkUrl: string;
-  sortOrder: number;
-  isActive: boolean;
-}
+import { adminApi } from '../utils/api.ts';
+import type { Banner, BannerFormData } from '@shared/types/index.ts';
 
 const banners = ref<Banner[]>([]);
 const loading = ref(false);
 const saving = ref(false);
+const uploading = ref(false);
 const showCreateDialog = ref(false);
 const editingBanner = ref<Banner | null>(null);
 
-const form = ref<Banner>({
+const form = ref<BannerFormData>({
   title: '',
   description: '',
   imagePath: '',
@@ -129,41 +124,44 @@ const form = ref<Banner>({
   isActive: true,
 });
 
-// 模拟数据
 onMounted(() => {
-  banners.value = [
-    {
-      id: 1,
-      title: '精选字体推荐',
-      description: '本周最受欢迎的免费字体合集',
-      imagePath: '',
-      linkUrl: 'https://example.com/featured',
-      sortOrder: 1,
-      isActive: true,
-    },
-    {
-      id: 2,
-      title: '商用字体指南',
-      description: '了解如何合法使用免费字体进行商业项目',
-      imagePath: '',
-      linkUrl: 'https://example.com/commercial',
-      sortOrder: 2,
-      isActive: true,
-    },
-  ];
+  fetchBanners();
 });
 
-function handleImageChange(file: any) {
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    form.value.imagePath = e.target?.result as string;
-  };
-  reader.readAsDataURL(file.raw);
+async function fetchBanners() {
+  loading.value = true;
+  try {
+    banners.value = await adminApi.getBanners();
+  } catch (err: any) {
+    ElMessage.error(err.message || '加载失败');
+  } finally {
+    loading.value = false;
+  }
+}
+
+async function handleImageChange(file: any) {
+  uploading.value = true;
+  try {
+    const res = await adminApi.uploadImage(file.raw, 'banners');
+    form.value.imagePath = res.url;
+    ElMessage.success('图片上传成功');
+  } catch (err: any) {
+    ElMessage.error(err.message || '图片上传失败');
+  } finally {
+    uploading.value = false;
+  }
 }
 
 function editBanner(banner: Banner) {
   editingBanner.value = banner;
-  form.value = { ...banner };
+  form.value = {
+    title: banner.title,
+    description: banner.description || '',
+    imagePath: banner.imagePath,
+    linkUrl: banner.linkUrl || '',
+    sortOrder: banner.sortOrder,
+    isActive: banner.isActive,
+  };
   showCreateDialog.value = true;
 }
 
@@ -184,39 +182,35 @@ async function saveBanner() {
     ElMessage.warning('请输入标题');
     return;
   }
+  if (!form.value.imagePath) {
+    ElMessage.warning('请上传预览图');
+    return;
+  }
 
   saving.value = true;
-  
-  // 模拟保存
-  await new Promise((resolve) => setTimeout(resolve, 500));
-  
-  if (editingBanner.value) {
-    const index = banners.value.findIndex((b) => b.id === editingBanner.value?.id);
-    if (index !== -1) {
-      banners.value[index] = { ...form.value, id: editingBanner.value.id };
+  try {
+    if (editingBanner.value) {
+      await adminApi.updateBanner(editingBanner.value.id, form.value);
+      ElMessage.success('更新成功');
+    } else {
+      await adminApi.createBanner(form.value);
+      ElMessage.success('创建成功');
     }
-    ElMessage.success('更新成功');
-  } else {
-    const newId = Math.max(...banners.value.map((b) => b.id || 0), 0) + 1;
-    banners.value.push({ ...form.value, id: newId });
-    ElMessage.success('创建成功');
+    showCreateDialog.value = false;
+    await fetchBanners();
+  } catch (err: any) {
+    ElMessage.error(err.message || '保存失败');
+  } finally {
+    saving.value = false;
   }
-  
-  saving.value = false;
-  showCreateDialog.value = false;
 }
 
 async function deleteBanner(id: number) {
   try {
-    await ElMessageBox.confirm('确定要删除这个轮播图吗？', '提示', {
-      type: 'warning',
-    });
-    
-    const index = banners.value.findIndex((b) => b.id === id);
-    if (index !== -1) {
-      banners.value.splice(index, 1);
-      ElMessage.success('删除成功');
-    }
+    await ElMessageBox.confirm('确定要删除这个轮播图吗？', '提示', { type: 'warning' });
+    await adminApi.deleteBanner(id);
+    ElMessage.success('删除成功');
+    await fetchBanners();
   } catch {
     // 用户取消
   }
