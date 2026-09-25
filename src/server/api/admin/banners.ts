@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { z } from 'zod/v4';
 import { authenticateToken } from '../../auth/middleware.js';
 import { validate } from '../../middleware/validate.js';
-import { findBanners, createBanner, updateBanner, deleteBanner } from '../../db/queries.js';
+import { findBannersPaginated, createBanner, updateBanner, deleteBanner } from '../../db/queries.js';
 import type { CreateBannerData } from '../../db/queries.js';
 
 export const adminBannerRouter = Router();
@@ -17,10 +17,12 @@ const bannerSchema = z.object({
   isActive: z.boolean().optional(),
 });
 
-adminBannerRouter.get('/', async (_req, res, next) => {
+adminBannerRouter.get('/', async (req, res, next) => {
   try {
-    const banners = await findBanners();
-    res.json({ success: true, data: banners });
+    const page = req.query.page ? parseInt(req.query.page as string, 10) : 1;
+    const pageSize = req.query.pageSize ? parseInt(req.query.pageSize as string, 10) : 20;
+    const result = await findBannersPaginated(page, pageSize);
+    res.json({ success: true, data: result });
   } catch (err) {
     next(err);
   }

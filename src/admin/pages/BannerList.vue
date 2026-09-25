@@ -1,52 +1,66 @@
 <template>
-  <div class="p-6">
-    <div class="flex items-center justify-between mb-6">
-      <h2 class="text-xl font-semibold text-gray-900">轮播图管理</h2>
+  <div class="h-full flex flex-col">
+    <div class="flex items-center justify-between px-6 pt-5 pb-3">
+      <h2 class="text-xl font-bold text-gray-900">轮播图管理</h2>
       <el-button type="primary" @click="showCreateDialog = true">
         <el-icon><Plus /></el-icon>
         新增轮播图
       </el-button>
     </div>
 
-    <el-table :data="banners" v-loading="loading" stripe>
-      <el-table-column prop="id" label="ID" width="80" />
-      <el-table-column label="预览图" width="180">
-        <template #default="{ row }">
-          <el-image
-            v-if="row.imagePath"
-            :src="row.imagePath"
-            fit="cover"
-            class="w-[160px] h-[80px] rounded"
-            :preview-src-list="[row.imagePath]"
-          />
-          <span v-else class="text-gray-400 text-sm">未上传</span>
-        </template>
-      </el-table-column>
-      <el-table-column prop="title" label="标题" min-width="150" />
-      <el-table-column prop="description" label="描述" min-width="200" show-overflow-tooltip />
-      <el-table-column prop="linkUrl" label="跳转链接" min-width="200" show-overflow-tooltip>
-        <template #default="{ row }">
-          <a v-if="row.linkUrl" :href="row.linkUrl" target="_blank" class="text-blue-600 hover:underline">
-            {{ row.linkUrl }}
-          </a>
-          <span v-else class="text-gray-400">无</span>
-        </template>
-      </el-table-column>
-      <el-table-column prop="sortOrder" label="排序" width="100" />
-      <el-table-column prop="isActive" label="状态" width="100">
-        <template #default="{ row }">
-          <el-tag :type="row.isActive ? 'success' : 'info'">
-            {{ row.isActive ? '启用' : '禁用' }}
-          </el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column label="操作" width="200" fixed="right">
-        <template #default="{ row }">
-          <el-button size="small" @click="editBanner(row)">编辑</el-button>
-          <el-button size="small" type="danger" @click="deleteBanner(row.id)">删除</el-button>
-        </template>
-      </el-table-column>
-    </el-table>
+    <div class="flex-1 px-6 pb-4">
+      <el-table :data="banners" v-loading="loading" stripe class="bg-white rounded-lg border border-gray-200">
+        <el-table-column prop="id" label="ID" width="80" />
+        <el-table-column label="预览图" width="180">
+          <template #default="{ row }">
+            <el-image
+              v-if="row.imagePath"
+              :src="row.imagePath"
+              fit="cover"
+              class="w-[160px] h-[80px] rounded"
+              :preview-src-list="[row.imagePath]"
+            />
+            <span v-else class="text-gray-400 text-sm">未上传</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="title" label="标题" min-width="150" />
+        <el-table-column prop="description" label="描述" min-width="200" show-overflow-tooltip />
+        <el-table-column prop="linkUrl" label="跳转链接" min-width="200" show-overflow-tooltip>
+          <template #default="{ row }">
+            <a v-if="row.linkUrl" :href="row.linkUrl" target="_blank" class="text-blue-600 hover:underline">
+              {{ row.linkUrl }}
+            </a>
+            <span v-else class="text-gray-400">无</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="sortOrder" label="排序" width="100" />
+        <el-table-column prop="isActive" label="状态" width="100">
+          <template #default="{ row }">
+            <el-tag :type="row.isActive ? 'success' : 'info'">
+              {{ row.isActive ? '启用' : '禁用' }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" width="200" fixed="right">
+          <template #default="{ row }">
+            <el-button size="small" @click="editBanner(row)">编辑</el-button>
+            <el-button size="small" type="danger" @click="deleteBanner(row.id)">删除</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+
+      <div class="flex justify-end mt-4">
+        <el-pagination
+          v-model:current-page="currentPage"
+          v-model:page-size="pageSize"
+          :total="total"
+          :page-sizes="[10, 20, 50]"
+          layout="total, sizes, prev, pager, next"
+          @size-change="fetchBanners"
+          @current-change="fetchBanners"
+        />
+      </div>
+    </div>
 
     <!-- 新增/编辑对话框 -->
     <el-dialog
@@ -114,6 +128,9 @@ const saving = ref(false);
 const uploading = ref(false);
 const showCreateDialog = ref(false);
 const editingBanner = ref<Banner | null>(null);
+const total = ref(0);
+const currentPage = ref(1);
+const pageSize = ref(20);
 
 const form = ref<BannerFormData>({
   title: '',
@@ -131,7 +148,9 @@ onMounted(() => {
 async function fetchBanners() {
   loading.value = true;
   try {
-    banners.value = await adminApi.getBanners();
+    const result = await adminApi.getBanners(currentPage.value, pageSize.value);
+    banners.value = result.data;
+    total.value = result.total;
   } catch (err: any) {
     ElMessage.error(err.message || '加载失败');
   } finally {

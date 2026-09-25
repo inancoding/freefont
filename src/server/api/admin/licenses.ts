@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { z } from 'zod/v4';
 import { authenticateToken } from '../../auth/middleware.js';
 import { validate } from '../../middleware/validate.js';
-import { createLicense, updateLicense, findLicenses } from '../../db/queries.js';
+import { createLicense, updateLicense, findLicensesPaginated } from '../../db/queries.js';
 import type { CreateLicenseData } from '../../db/queries.js';
 
 export const adminLicenseRouter = Router();
@@ -49,10 +49,12 @@ adminLicenseRouter.put('/:id', validate(licenseSchema.partial()), async (req, re
   }
 });
 
-adminLicenseRouter.get('/', async (_req, res, next) => {
+adminLicenseRouter.get('/', async (req, res, next) => {
   try {
-    const licenses = await findLicenses();
-    res.json({ success: true, data: licenses });
+    const page = req.query.page ? parseInt(req.query.page as string, 10) : 1;
+    const pageSize = req.query.pageSize ? parseInt(req.query.pageSize as string, 10) : 20;
+    const result = await findLicensesPaginated(page, pageSize);
+    res.json({ success: true, data: result });
   } catch (err) {
     next(err);
   }

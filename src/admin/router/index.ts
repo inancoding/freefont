@@ -8,8 +8,6 @@ export const router = createRouter({
   routes: [
     { path: '/', redirect: '/fonts' },
     { path: '/fonts', component: () => import('../pages/FontList.vue') },
-    { path: '/fonts/create', component: () => import('../pages/FontCreate.vue') },
-    { path: '/fonts/:slug/edit', component: () => import('../pages/FontEdit.vue') },
     { path: '/licenses', component: () => import('../pages/LicenseList.vue') },
     { path: '/banners', component: () => import('../pages/BannerList.vue') },
     { path: '/login', component: () => import('../pages/Login.vue') },

@@ -325,6 +325,16 @@ export async function findLicenses() {
   return rows.map(toCamelLicense);
 }
 
+export async function findLicensesPaginated(page = 1, pageSize = 20) {
+  const totalRow = await getRow<{ total: number }>('SELECT COUNT(*) as total FROM licenses');
+  const total = totalRow?.total ?? 0;
+  const rows = await allRows<LicenseRow>(
+    'SELECT * FROM licenses ORDER BY type, name LIMIT ? OFFSET ?',
+    [pageSize, (page - 1) * pageSize],
+  );
+  return { data: rows.map(toCamelLicense), total, page, pageSize };
+}
+
 export async function findLicenseById(id: string) {
   const row = await getRow<LicenseRow>('SELECT * FROM licenses WHERE id = ?', [id]);
   if (!row) return null;
@@ -423,6 +433,16 @@ function toCamelBanner(row: BannerRow) {
 export async function findBanners() {
   const rows = await allRows<BannerRow>('SELECT * FROM banners ORDER BY sort_order ASC, id ASC');
   return rows.map(toCamelBanner);
+}
+
+export async function findBannersPaginated(page = 1, pageSize = 20) {
+  const totalRow = await getRow<{ total: number }>('SELECT COUNT(*) as total FROM banners');
+  const total = totalRow?.total ?? 0;
+  const rows = await allRows<BannerRow>(
+    'SELECT * FROM banners ORDER BY sort_order ASC, id ASC LIMIT ? OFFSET ?',
+    [pageSize, (page - 1) * pageSize],
+  );
+  return { data: rows.map(toCamelBanner), total, page, pageSize };
 }
 
 export async function findActiveBanners() {

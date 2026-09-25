@@ -43,8 +43,10 @@
         </div>
       </el-aside>
     </template>
-    <el-main class="bg-gray-50 p-6 overflow-auto">
-      <router-view />
+    <el-main class="bg-gray-50 !p-0 overflow-hidden">
+      <el-scrollbar>
+        <router-view />
+      </el-scrollbar>
     </el-main>
   </el-container>
 </template>

@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { z } from 'zod/v4';
 import { authenticateToken } from '../../auth/middleware.js';
 import { validate } from '../../middleware/validate.js';
-import { createFont, updateFont, deleteFont, findFonts } from '../../db/queries.js';
+import { createFont, updateFont, deleteFont, findFonts, findFontBySlug } from '../../db/queries.js';
 import type { CreateFontData } from '../../db/queries.js';
 
 export const adminFontRouter = Router();
@@ -81,6 +81,20 @@ adminFontRouter.get('/', async (req, res, next) => {
     const pageSize = req.query.pageSize ? parseInt(req.query.pageSize as string, 10) : 50;
     const result = await findFonts({ page, pageSize });
     res.json({ success: true, data: result });
+  } catch (err) {
+    next(err);
+  }
+});
+
+adminFontRouter.get('/:slug', async (req, res, next) => {
+  try {
+    const slug = req.params.slug as string;
+    const font = await findFontBySlug(slug);
+    if (!font) {
+      res.status(404).json({ success: false, error: 'Font not found' });
+      return;
+    }
+    res.json({ success: true, data: font });
   } catch (err) {
     next(err);
   }

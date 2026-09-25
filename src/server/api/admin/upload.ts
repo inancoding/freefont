@@ -2,8 +2,8 @@ import { Router } from 'express';
 import multer from 'multer';
 import { join, dirname, extname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { existsSync, mkdirSync, unlinkSync, readFileSync } from 'node:fs';
-import { createHash } from 'node:crypto';
+import { existsSync, mkdirSync, unlinkSync, readFileSync, writeFileSync } from 'node:fs';
+import { createHash, randomBytes } from 'node:crypto';
 import { authenticateToken } from '../../auth/middleware.js';
 import { uploadZipToGithub } from '../../github/client.js';
 import { computeDownloadUrls } from '../../utils/download-urls.js';
@@ -15,6 +15,10 @@ const TMP_DIR = join(ROOT, 'tmp');
 
 if (!existsSync(TMP_DIR)) mkdirSync(TMP_DIR, { recursive: true });
 if (!existsSync(IMAGES_DIR)) mkdirSync(IMAGES_DIR, { recursive: true });
+
+function randomFilename(ext: string): string {
+  return randomBytes(16).toString('hex') + ext;
+}
 
 const zipStorage = multer.diskStorage({
   destination: TMP_DIR,
@@ -29,8 +33,8 @@ const imageStorage = multer.diskStorage({
     cb(null, dest);
   },
   filename: (_req, file, cb) => {
-    const name = _req.body.name || file.originalname;
-    cb(null, name);
+    const ext = extname(file.originalname).toLowerCase();
+    cb(null, randomFilename(ext));
   },
 });
 
@@ -103,4 +107,49 @@ uploadRouter.post('/image', uploadImage.single('file'), (req, res) => {
       url: relativePath,
     },
   });
+});
+
+uploadRouter.post('/fetch-image', async (req, res, next) => {
+  const { url, subfolder } = req.body as { url?: string; subfolder?: string };
+  if (!url) {
+    res.status(400).json({ success: false, error: 'url is required' });
+    return;
+  }
+
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      res.status(502).json({ success: false, error: `Failed to fetch image: ${response.status}` });
+      return;
+    }
+
+    const contentType = response.headers.get('content-type') || '';
+    const extMap: Record<string, string> = {
+      'image/png': '.png',
+      'image/jpeg': '.jpg',
+      'image/webp': '.webp',
+      'image/gif': '.gif',
+    };
+    const ext = extMap[contentType.split(';')[0].trim()] || extname(new URL(url).pathname) || '.png';
+
+    const buffer = Buffer.from(await response.arrayBuffer());
+    const filename = randomFilename(ext);
+
+    const folder = subfolder || 'content';
+    const dest = join(IMAGES_DIR, folder);
+    if (!existsSync(dest)) mkdirSync(dest, { recursive: true });
+    const filepath = join(dest, filename);
+    writeFileSync(filepath, buffer);
+
+    const relativePath = `/images/${folder}/${filename}`;
+    res.json({
+      success: true,
+      data: {
+        path: relativePath,
+        url: relativePath,
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
 });

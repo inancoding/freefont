@@ -1,55 +1,49 @@
 <template>
-  <el-form label-width="120px" @submit.prevent="onSubmit">
-    <el-row :gutter="20">
-      <el-col :span="12">
+  <el-form label-width="100px" @submit.prevent="onSubmit">
+    <el-row :gutter="16">
+      <el-col :span="6">
         <el-form-item label="Slug" required>
           <el-input v-model="form.slug" :disabled="!!initial" />
         </el-form-item>
       </el-col>
-      <el-col :span="12">
+      <el-col :span="6">
+        <el-form-item label="中文名">
+          <el-input v-model="form.nameZh" />
+        </el-form-item>
+      </el-col>
+      <el-col :span="6">
+        <el-form-item label="英文名">
+          <el-input v-model="form.nameEn" />
+        </el-form-item>
+      </el-col>
+      <el-col :span="6">
         <el-form-item label="版本" required>
           <el-input v-model="form.version" />
         </el-form-item>
       </el-col>
     </el-row>
 
-    <el-row :gutter="20">
-      <el-col :span="12">
-        <el-form-item label="中文名">
-          <el-input v-model="form.nameZh" />
-        </el-form-item>
-      </el-col>
-      <el-col :span="12">
-        <el-form-item label="英文名">
-          <el-input v-model="form.nameEn" />
-        </el-form-item>
-      </el-col>
-    </el-row>
-
-    <el-row :gutter="20">
-      <el-col :span="12">
+    <el-row :gutter="16">
+      <el-col :span="6">
         <el-form-item label="厂商" required>
           <el-input v-model="form.vendor" />
         </el-form-item>
       </el-col>
-      <el-col :span="12">
+      <el-col :span="6">
         <el-form-item label="许可" required>
           <el-select v-model="form.licenseId" placeholder="选择许可" class="w-full">
             <el-option v-for="l in licenses" :key="l.id" :label="l.name" :value="l.id" />
           </el-select>
         </el-form-item>
       </el-col>
-    </el-row>
-
-    <el-row :gutter="20">
-      <el-col :span="12">
+      <el-col :span="6">
         <el-form-item label="分类">
           <el-select v-model="form.category" placeholder="选择分类" clearable class="w-full">
             <el-option v-for="c in CATEGORIES" :key="c" :label="c" :value="c" />
           </el-select>
         </el-form-item>
       </el-col>
-      <el-col :span="12">
+      <el-col :span="6">
         <el-form-item label="官方网站">
           <el-input v-model="form.officialUrl" />
         </el-form-item>
@@ -57,14 +51,14 @@
     </el-row>
 
     <el-form-item label="简介">
-      <el-input v-model="form.description" type="textarea" :rows="3" />
+      <el-input v-model="form.description" type="textarea" :rows="2" />
     </el-form-item>
 
     <el-form-item label="详细内容">
-      <el-input v-model="form.content" type="textarea" :rows="8" class="font-mono" />
+      <MdEditor ref="editorRef" v-model="form.content" :style="{ height: '300px' }" language="zh-CN" :on-upload-img="onUploadImg" />
     </el-form-item>
 
-    <el-row :gutter="20">
+    <el-row :gutter="16">
       <el-col :span="8">
         <el-form-item label="语言">
           <el-checkbox-group v-model="form.languages">
@@ -88,12 +82,13 @@
       </el-col>
     </el-row>
 
-    <el-form-item label="标签">
-      <el-input v-model="tagsInput" placeholder="逗号分隔，如：免费, 商用, 黑体" />
-    </el-form-item>
-
-    <el-row :gutter="20">
-      <el-col :span="12">
+    <el-row :gutter="16">
+      <el-col :span="6">
+        <el-form-item label="标签">
+          <el-input v-model="tagsInput" placeholder="逗号分隔，如：免费, 商用, 黑体" />
+        </el-form-item>
+      </el-col>
+      <el-col :span="6">
         <el-form-item label="封面图">
           <el-upload
             :auto-upload="false"
@@ -106,7 +101,7 @@
           <span v-if="form.coverPath" class="text-xs text-gray-500 ml-2 truncate">{{ form.coverPath }}</span>
         </el-form-item>
       </el-col>
-      <el-col :span="12">
+      <el-col :span="6">
         <el-form-item label="预览图">
           <el-upload
             :auto-upload="false"
@@ -119,10 +114,7 @@
           <span v-if="form.previewPath" class="text-xs text-gray-500 ml-2 truncate">{{ form.previewPath }}</span>
         </el-form-item>
       </el-col>
-    </el-row>
-
-    <el-row :gutter="20">
-      <el-col :span="12">
+      <el-col :span="6">
         <el-form-item label="ZIP 文件">
           <el-upload
             :auto-upload="false"
@@ -131,25 +123,25 @@
             accept=".zip"
             :on-change="onZipChange"
           >
-            <el-button>选择 ZIP 文件</el-button>
+            <el-button>选择文件</el-button>
           </el-upload>
           <span v-if="form.downloadUrl" class="text-xs text-gray-500 ml-2 truncate">{{ form.downloadUrl }}</span>
         </el-form-item>
       </el-col>
-      <el-col :span="12">
+    </el-row>
+
+    <el-row :gutter="16">
+      <el-col :span="8">
         <el-form-item label="网盘链接">
           <el-input v-model="form.cloudDriveUrl" placeholder="备用下载链接" />
         </el-form-item>
       </el-col>
-    </el-row>
-
-    <el-row :gutter="20">
-      <el-col :span="12">
+      <el-col :span="4">
         <el-form-item label="文件大小">
           <el-input-number v-model="form.fileSize" :min="0" :controls="false" class="w-full" placeholder="bytes" />
         </el-form-item>
       </el-col>
-      <el-col :span="12">
+      <el-col :span="4">
         <el-form-item label="字数">
           <el-input-number v-model="form.glyphCount" :min="0" :controls="false" class="w-full" />
         </el-form-item>
@@ -158,24 +150,28 @@
 
     <el-form-item>
       <el-button type="primary" native-type="submit">{{ initial ? '保存' : '创建' }}</el-button>
-      <el-button @click="$router.push('/fonts')">取消</el-button>
+      <el-button @click="emit('cancel')">取消</el-button>
     </el-form-item>
   </el-form>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive, onMounted, onUnmounted } from 'vue';
 import { ElMessage } from 'element-plus';
 import type { UploadFile } from 'element-plus';
+import { MdEditor } from 'md-editor-v3';
+import 'md-editor-v3/lib/style.css';
 import { adminApi } from '../utils/api.ts';
 import { CATEGORIES, LANGUAGES } from '@shared/types/common.ts';
 import type { Font, FontFormData, License } from '@shared/types/index.ts';
+import { htmlToMarkdown, extractImageUrls, replaceImageUrls } from '../utils/html-to-markdown.ts';
 
-const WEIGHTS = ['100', '200', '300', '400', '500', '600', '700', '800', '900'];
+const WEIGHTS = ['Thin', 'ExtraLight', 'Light', 'Regular', 'Medium', 'SemiBold', 'Bold', 'ExtraBold', 'Black'];
 
 const props = defineProps<{ initial?: Font }>();
-const emit = defineEmits<{ submit: [data: FontFormData] }>();
+const emit = defineEmits<{ submit: [data: FontFormData]; cancel: [] }>();
 
+const editorRef = ref<InstanceType<typeof MdEditor> | null>(null);
 const licenses = ref<License[]>([]);
 const tagsInput = ref('');
 
@@ -202,7 +198,8 @@ const form = reactive<FontFormData>({
 });
 
 onMounted(async () => {
-  licenses.value = await adminApi.getLicenses();
+  const result = await adminApi.getLicenses(1, 200);
+  licenses.value = result.data;
   if (props.initial) {
     const f = props.initial;
     Object.assign(form, {
@@ -230,18 +227,108 @@ onMounted(async () => {
     if (f.glyphCount != null) form.glyphCount = f.glyphCount;
     tagsInput.value = f.tags.join(', ');
   }
+
+  setTimeout(() => {
+    const editorContainer = editorRef.value?.$el || document.querySelector('.md-editor');
+    if (editorContainer) {
+      const textarea = editorContainer.querySelector('textarea');
+      const editableDiv = editorContainer.querySelector('[contenteditable="true"]');
+      const targetElement = textarea || editableDiv;
+
+      if (targetElement) {
+        targetElement.addEventListener('paste', handlePaste as EventListener);
+        console.log('Paste handler attached to:', targetElement.tagName);
+      } else {
+        console.warn('No editable element found in md-editor');
+      }
+    }
+  }, 500);
 });
+
+onUnmounted(() => {
+  const editorContainer = editorRef.value?.$el || document.querySelector('.md-editor');
+  if (editorContainer) {
+    const textarea = editorContainer.querySelector('textarea');
+    const editableDiv = editorContainer.querySelector('[contenteditable="true"]');
+    const targetElement = textarea || editableDiv;
+
+    if (targetElement) {
+      targetElement.removeEventListener('paste', handlePaste as EventListener);
+    }
+  }
+});
+
+async function handlePaste(e: Event) {
+  const clipboardEvent = e as ClipboardEvent;
+  const html = clipboardEvent.clipboardData?.getData('text/html');
+
+  if (!html) return;
+
+  e.preventDefault();
+
+  let markdown = htmlToMarkdown(html);
+  const imageUrls = extractImageUrls(markdown);
+
+  if (imageUrls.length === 0) {
+    insertTextToEditor(markdown);
+    return;
+  }
+
+  insertTextToEditor(markdown);
+
+  const urlMap = new Map<string, string>();
+  await Promise.all(
+    imageUrls.map(async (url) => {
+      try {
+        const result = await adminApi.fetchImage(url);
+        urlMap.set(url, result.url);
+      } catch (err) {
+        console.warn('Failed to fetch image:', url, err);
+      }
+    })
+  );
+
+  if (urlMap.size > 0) {
+    markdown = replaceImageUrls(form.content || '', urlMap);
+    form.content = markdown;
+  }
+}
+
+function insertTextToEditor(text: string) {
+  const editorContainer = editorRef.value?.$el || document.querySelector('.md-editor');
+  if (!editorContainer) {
+    form.content = (form.content || '') + text;
+    return;
+  }
+
+  const textarea = editorContainer.querySelector('textarea');
+  if (textarea) {
+    textarea.focus();
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const content = form.content || '';
+    const before = content.substring(0, start);
+    const after = content.substring(end);
+    form.content = before + text + after;
+
+    setTimeout(() => {
+      textarea.selectionStart = textarea.selectionEnd = start + text.length;
+    }, 0);
+  } else {
+    form.content += text;
+  }
+}
 
 async function onImageChange(file: UploadFile) {
   if (!file.raw) return;
-  const result = await adminApi.uploadImage(file.raw);
+  const result = await adminApi.uploadImage(file.raw, 'covers');
   form.coverPath = result.url;
   ElMessage.success('封面图上传成功');
 }
 
 async function onPreviewChange(file: UploadFile) {
   if (!file.raw) return;
-  const result = await adminApi.uploadImage(file.raw);
+  const result = await adminApi.uploadImage(file.raw, 'covers');
   form.previewPath = result.url;
   ElMessage.success('预览图上传成功');
 }
@@ -253,6 +340,16 @@ async function onZipChange(file: UploadFile) {
   form.sha256 = result.sha256;
   form.fileSize = result.fileSize;
   ElMessage.success('ZIP 文件上传成功');
+}
+
+async function onUploadImg(files: File[]): Promise<{ url: string; name?: string }[]> {
+  const results = await Promise.all(
+    files.map(async (file) => {
+      const result = await adminApi.uploadImage(file, 'content');
+      return { url: result.url, name: file.name };
+    })
+  );
+  return results;
 }
 
 function onSubmit() {

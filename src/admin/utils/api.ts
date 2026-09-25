@@ -49,7 +49,8 @@ export const adminApi = {
 
   deleteFont: (slug: string) => request<{ deleted: boolean }>(`/admin/fonts/${slug}`, { method: 'DELETE' }),
 
-  getLicenses: () => request<import('@shared/types/index.ts').License[]>('/admin/licenses'),
+  getLicenses: (page = 1, pageSize = 20) =>
+    request<{ data: import('@shared/types/index.ts').License[]; total: number }>(`/admin/licenses?page=${page}&pageSize=${pageSize}`),
 
   createLicense: (data: import('@shared/types/index.ts').License) =>
     request<import('@shared/types/index.ts').License>('/admin/licenses', { method: 'POST', body: JSON.stringify(data) }),
@@ -64,6 +65,13 @@ export const adminApi = {
     return upload<import('@shared/types/index.ts').UploadImageResponse>('/admin/upload/image', fd);
   },
 
+  fetchImage: (url: string, subfolder?: string) => {
+    return request<import('@shared/types/index.ts').UploadImageResponse>('/admin/upload/fetch-image', {
+      method: 'POST',
+      body: JSON.stringify({ url, subfolder }),
+    });
+  },
+
   uploadZip: (file: File, slug: string, version: string) => {
     const fd = new FormData();
     fd.append('slug', slug);
@@ -72,8 +80,8 @@ export const adminApi = {
     return upload<import('@shared/types/index.ts').UploadZipResponse>('/admin/upload/zip', fd);
   },
 
-  getBanners: () =>
-    request<import('@shared/types/index.ts').Banner[]>('/admin/banners'),
+  getBanners: (page = 1, pageSize = 20) =>
+    request<{ data: import('@shared/types/index.ts').Banner[]; total: number }>(`/admin/banners?page=${page}&pageSize=${pageSize}`),
 
   createBanner: (data: import('@shared/types/index.ts').BannerFormData) =>
     request<import('@shared/types/index.ts').Banner>('/admin/banners', { method: 'POST', body: JSON.stringify(data) }),
