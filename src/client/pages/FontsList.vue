@@ -1,5 +1,6 @@
 <template>
   <div class="max-w-7xl mx-auto py-8">
+    <AdBanner />
     <!-- 筛选条件 -->
     <div class="mb-6 space-y-3">
       <div class="flex flex-wrap items-center gap-x-3 gap-y-2">
@@ -82,6 +83,7 @@
 import { onMounted, onUnmounted, ref, computed, nextTick } from 'vue';
 import { useFontStore } from '../stores/fontStore.ts';
 import FontCard from '../components/FontCard.vue';
+import AdBanner from '../components/AdBanner.vue';
 import { CATEGORIES, LANGUAGES } from '@shared/types/common.ts';
 import { api } from '../utils/api.ts';
 import type { FontListItem } from '@shared/types/index.ts';

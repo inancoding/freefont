@@ -10,6 +10,10 @@
           <el-menu :default-active="route.path" mode="horizontal" :ellipsis="false" router class="!border-b-0">
             <el-menu-item index="/">首页</el-menu-item>
             <el-menu-item index="/fonts">免费字体</el-menu-item>
+            <el-menu-item index="/creators">字体创作者</el-menu-item>
+            <el-menu-item index="/download">全站下载</el-menu-item>
+            <el-menu-item index="/submit">字体提交</el-menu-item>
+            <el-menu-item index="/about">关于我们</el-menu-item>
           </el-menu>
           <el-input
             :model-value="searchValue"
@@ -48,6 +52,10 @@
               <ul class="space-y-2 text-sm">
                 <li><router-link to="/" class="hover:text-white transition-colors">首页</router-link></li>
                 <li><router-link to="/fonts" class="hover:text-white transition-colors">免费字体</router-link></li>
+                <li><router-link to="/creators" class="hover:text-white transition-colors">字体创作者</router-link></li>
+                <li><router-link to="/download" class="hover:text-white transition-colors">全站下载</router-link></li>
+                <li><router-link to="/submit" class="hover:text-white transition-colors">字体提交</router-link></li>
+                <li><router-link to="/about" class="hover:text-white transition-colors">关于我们</router-link></li>
               </ul>
             </div>
 

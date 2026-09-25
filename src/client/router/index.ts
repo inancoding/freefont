@@ -18,5 +18,25 @@ export const router = createRouter({
       name: 'font-detail',
       component: () => import('../pages/FontDetail.vue'),
     },
+    {
+      path: '/creators',
+      name: 'creators',
+      component: () => import('../pages/Creators.vue'),
+    },
+    {
+      path: '/download',
+      name: 'download',
+      component: () => import('../pages/Download.vue'),
+    },
+    {
+      path: '/submit',
+      name: 'submit',
+      component: () => import('../pages/Submit.vue'),
+    },
+    {
+      path: '/about',
+      name: 'about',
+      component: () => import('../pages/About.vue'),
+    },
   ],
 });
