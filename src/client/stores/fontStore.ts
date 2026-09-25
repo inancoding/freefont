@@ -41,7 +41,6 @@ export const useFontStore = defineStore('fonts', () => {
     if (search) params.value.search = search;
     else delete params.value.search;
     params.value.page = 1;
-    fetchFonts();
   }
 
   function setFilter(key: keyof FontListParams, value: string) {

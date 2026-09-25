@@ -80,7 +80,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref, computed, nextTick } from 'vue';
+import { onMounted, onUnmounted, ref, computed, nextTick, watch } from 'vue';
 import { useFontStore } from '../stores/fontStore.ts';
 import FontCard from '../components/FontCard.vue';
 import AdBanner from '../components/AdBanner.vue';
@@ -127,6 +127,7 @@ function onSortChange(val: string) {
 async function loadInitial() {
   const currentSort = params.sort || 'added_at';
   const currentOrder = params.order || 'desc';
+  const currentSearch = params.search || '';
   
   store.loading = true;
   isInitialLoad.value = true;
@@ -136,6 +137,7 @@ async function loadInitial() {
       pageSize,
       sort: currentSort,
       order: currentOrder,
+      search: currentSearch || undefined,
       category: categoryValue.value || undefined,
       language: languageValue.value || undefined,
     } as Record<string, string | number>);
@@ -162,6 +164,7 @@ async function loadMore() {
       pageSize,
       sort: params.sort,
       order: params.order,
+      search: params.search || undefined,
       category: categoryValue.value || undefined,
       language: languageValue.value || undefined,
     } as Record<string, string | number>);
@@ -177,9 +180,17 @@ async function loadMore() {
   }
 }
 
+watch(() => store.params.search, () => {
+  currentPage.value = 1;
+  allFonts.value = [];
+  loadInitial();
+});
+
 onMounted(() => {
-  store.resetFilters();
-  store.setSort('added_at', 'desc');
+  if (!params.search) {
+    store.resetFilters();
+    store.setSort('added_at', 'desc');
+  }
   loadInitial();
   window.addEventListener('fonts-load-more', handleLoadMore);
 });
