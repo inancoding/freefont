@@ -130,7 +130,8 @@ uploadRouter.post('/fetch-image', async (req, res, next) => {
       'image/webp': '.webp',
       'image/gif': '.gif',
     };
-    const ext = extMap[contentType.split(';')[0].trim()] || extname(new URL(url).pathname) || '.png';
+    const mimeType = contentType.split(';')[0]?.trim() || '';
+    const ext = extMap[mimeType] || extname(new URL(url).pathname) || '.png';
 
     const buffer = Buffer.from(await response.arrayBuffer());
     const filename = randomFilename(ext);

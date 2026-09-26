@@ -12,7 +12,7 @@ export interface JwtPayload {
 }
 
 export function generateToken(username: string): string {
-  return jwt.sign({ username }, JWT_SECRET, { expiresIn: '7d' });
+  return jwt.sign({ username }, JWT_SECRET, { expiresIn: '8h' });
 }
 
 export function verifyCredentials(username: string, password: string): boolean {

@@ -11,12 +11,35 @@ export function getToken() {
   return token;
 }
 
+export function isTokenExpired(): boolean {
+  if (!token) return true;
+  try {
+    const parts = token.split('.');
+    if (parts.length < 2) return true;
+    const payload = JSON.parse(atob(parts[1]!));
+    return Date.now() >= payload.exp * 1000;
+  } catch {
+    return true;
+  }
+}
+
+async function handleUnauthorized(res: Response) {
+  if (res.status === 401) {
+    setToken(null);
+    window.location.href = '/admin/login';
+  }
+}
+
 async function request<T>(url: string, options?: RequestInit): Promise<T> {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
   if (token) headers['Authorization'] = `Bearer ${token}`;
   const res = await fetch(`${API_BASE}${url}`, { ...options, headers });
-  const json = await res.json() as { data: T; error?: string };
-  if (!res.ok) throw new Error(json.error || 'Request failed');
+  if (!res.ok) {
+    await handleUnauthorized(res);
+    const json = await res.json() as { error?: string };
+    throw new Error(json.error || 'Request failed');
+  }
+  const json = await res.json() as { data: T };
   return json.data;
 }
 
@@ -24,8 +47,12 @@ async function upload<T>(url: string, formData: FormData): Promise<T> {
   const headers: Record<string, string> = {};
   if (token) headers['Authorization'] = `Bearer ${token}`;
   const res = await fetch(`${API_BASE}${url}`, { method: 'POST', headers, body: formData });
-  const json = await res.json() as { data: T; error?: string };
-  if (!res.ok) throw new Error(json.error || 'Upload failed');
+  if (!res.ok) {
+    await handleUnauthorized(res);
+    const json = await res.json() as { error?: string };
+    throw new Error(json.error || 'Upload failed');
+  }
+  const json = await res.json() as { data: T };
   return json.data;
 }
 

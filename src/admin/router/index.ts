@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import { getToken } from '../utils/api.ts';
+import { getToken, isTokenExpired, setToken } from '../utils/api.ts';
 
 const PUBLIC_PATHS = ['/login'];
 
@@ -15,7 +15,9 @@ export const router = createRouter({
 });
 
 router.beforeEach((to) => {
-  if (!PUBLIC_PATHS.includes(to.path) && !getToken()) {
+  if (PUBLIC_PATHS.includes(to.path)) return;
+  if (!getToken() || isTokenExpired()) {
+    setToken(null);
     return { path: '/login', query: { redirect: to.fullPath } };
   }
 });
