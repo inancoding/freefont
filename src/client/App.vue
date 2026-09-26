@@ -186,7 +186,7 @@ function selectHistory(item: string) {
 }
 
 function onSearchFocus() {
-  if (searchHistory.length > 0) {
+  if (searchHistory.value.length > 0) {
     showHistory.value = true;
   }
 }

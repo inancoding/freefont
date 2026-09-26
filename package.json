@@ -19,7 +19,7 @@
     "db:migrate": "tsx --env-file=.env.development db/migrate.ts",
     "db:migrate:prod": "tsx --env-file=.env.production db/migrate.ts",
     "db:reset": "rm -f db/free-font.db && npm run db:migrate",
-    "typecheck": "vue-tsc --noEmit && tsc --noEmit -p tsconfig.server.json"
+    "typecheck": "vue-tsc --noEmit -p tsconfig.client.json && tsc --noEmit -p tsconfig.server.json"
   },
   "dependencies": {
     "@element-plus/icons-vue": "^2.3.2",
