@@ -166,7 +166,7 @@ import { CATEGORIES, LANGUAGES } from '@shared/types/common.ts';
 import type { Font, FontFormData, License } from '@shared/types/index.ts';
 import { htmlToMarkdown, extractImageUrls, replaceImageUrls } from '../utils/html-to-markdown.ts';
 
-const WEIGHTS = ['Thin', 'ExtraLight', 'Light', 'Regular', 'Medium', 'SemiBold', 'Bold', 'ExtraBold', 'Black'];
+const WEIGHTS = ['Thin', 'ExtraLight', 'Light', 'Regular', 'Normal', 'Medium', 'SemiBold', 'Bold', 'ExtraBold', 'Black'];
 
 const props = defineProps<{ initial?: Font }>();
 const emit = defineEmits<{ submit: [data: FontFormData]; cancel: [] }>();
