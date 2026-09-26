@@ -1,5 +1,5 @@
 <template>
-  <div class="max-w-5xl mx-auto">
+  <div class="max-w-5xl mx-auto mt-8">
     <div v-if="loading" v-loading="true" class="min-h-[300px]" />
 
     <el-empty v-else-if="!font" description="字体不存在" />
@@ -114,7 +114,7 @@ function simpleMarkdown(md: string): string {
 }
 
 function downloadLabel(key: string): string {
-  const map: Record<string, string> = { githubRaw: 'GitHub 直链', jsdelivr: 'jsDelivr CDN', githack: 'GitHack CDN' };
+  const map: Record<string, string> = { githubRaw: 'GitHub 直链', jsdelivr: 'jsDelivr CDN', githack: 'GitHack CDN', cloudDrive: '百度网盘' };
   return map[key] || key;
 }
 
