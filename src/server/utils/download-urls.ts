@@ -1,5 +1,5 @@
 const GITHUB_OWNER = process.env.GITHUB_OWNER || 'inancoding';
-const GITHUB_REPO = process.env.GITHUB_REPO || 'free-font';
+const GITHUB_REPO = process.env.GITHUB_REPO || 'freefont';
 
 export function computeDownloadUrls(slug: string, version: string, cloudDriveUrl?: string | null) {
   const tag = `${slug}-v${version}`;

@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN || '';
 const GITHUB_OWNER = process.env.GITHUB_OWNER || 'inancoding';
-const GITHUB_REPO = process.env.GITHUB_REPO || 'free-font';
+const GITHUB_REPO = process.env.GITHUB_REPO || 'freefont';
 
 const octokit = new Octokit({ auth: GITHUB_TOKEN });
 
