@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { findFonts, findFontBySlug, incrementDownload } from '../db/queries.js';
+import { findFonts, findFontBySlug, findRecommendFonts, incrementDownload } from '../db/queries.js';
 import { computeDownloadUrls } from '../utils/download-urls.js';
 import type { FontListParams } from '@shared/types/index.js';
 
@@ -37,6 +37,38 @@ fontRouter.get('/:slug', async (req, res, next) => {
   }
 });
 
+fontRouter.get('/:slug/download-urls', async (req, res, next) => {
+  try {
+    const font = await findFontBySlug(req.params.slug!);
+    if (!font) {
+      res.status(404).json({ success: false, error: 'Font not found' });
+      return;
+    }
+    const urls = computeDownloadUrls(font.slug, font.version, font.cloudDriveUrl);
+    res.json({ success: true, data: urls });
+  } catch (err) {
+    next(err);
+  }
+});
+
+fontRouter.get('/:slug/recommend', async (req, res, next) => {
+  try {
+    const font = await findFontBySlug(req.params.slug!);
+    if (!font) {
+      res.status(404).json({ success: false, error: 'Font not found' });
+      return;
+    }
+    if (!font.category) {
+      res.json({ success: true, data: [] });
+      return;
+    }
+    const fonts = await findRecommendFonts(font.category, font.slug, 10);
+    res.json({ success: true, data: fonts });
+  } catch (err) {
+    next(err);
+  }
+});
+
 fontRouter.post('/:slug/download', async (req, res, next) => {
   try {
     const font = await findFontBySlug(req.params.slug!);
@@ -45,8 +77,7 @@ fontRouter.post('/:slug/download', async (req, res, next) => {
       return;
     }
     await incrementDownload(font.slug);
-    const urls = computeDownloadUrls(font.slug, font.version, font.cloudDriveUrl);
-    res.json({ success: true, data: urls });
+    res.json({ success: true });
   } catch (err) {
     next(err);
   }

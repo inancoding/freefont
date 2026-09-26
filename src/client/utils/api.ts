@@ -23,8 +23,14 @@ export const api = {
 
   getFont: (slug: string) => request<import('@shared/types/index.ts').Font>(`/fonts/${slug}`),
 
+  getDownloadUrls: (slug: string) =>
+    request<import('@shared/types/index.ts').DownloadUrls>(`/fonts/${slug}/download-urls`),
+
+  getRecommendFonts: (slug: string) =>
+    request<import('@shared/types/index.ts').FontListItem[]>(`/fonts/${slug}/recommend`),
+
   recordDownload: (slug: string) =>
-    request<import('@shared/types/index.ts').DownloadUrls>(`/fonts/${slug}/download`, { method: 'POST' }),
+    request<void>(`/fonts/${slug}/download`, { method: 'POST' }),
 
   getLicenses: () => request<import('@shared/types/index.ts').License[]>('/licenses'),
 

@@ -19,22 +19,17 @@
             </div>
           </div>
 
-          <el-button type="primary" size="large" class="w-full" @click="onDownload">
-            <el-icon class="mr-1"><Download /></el-icon>下载字体
-          </el-button>
-
-          <div v-if="downloadUrls" class="mt-3 space-y-2">
-            <el-link
+          <div v-if="downloadUrls" class="download-buttons space-y-2">
+            <el-button
               v-for="(url, key) in downloadUrls"
               :key="key"
-              :href="url"
               type="primary"
-              :underline="false"
-              target="_blank"
-              class="block text-xs truncate"
+              class="w-full"
+              @click="url && onDownloadClick(url)"
             >
-              {{ downloadLabel(key) }}
-            </el-link>
+              <el-icon class="mr-1"><Download /></el-icon>{{ downloadLabel(key as string) }}
+            </el-button>
+            <p class="text-xs text-gray-400 mt-2">如果以上链接下载失败时请使用百度网盘下载</p>
           </div>
         </div>
 
@@ -44,24 +39,22 @@
           </h1>
           <p v-if="font.nameZh && font.nameEn" class="text-gray-500 mt-1">{{ font.nameEn }}</p>
 
+          <div v-if="font.tags.length" class="mt-2 flex flex-wrap gap-2">
+            <el-tag v-for="tag in font.tags" :key="tag" type="info" size="small">{{ tag }}</el-tag>
+          </div>
+
           <p v-if="font.description" class="mt-4 text-gray-600 leading-relaxed">{{ font.description }}</p>
 
           <el-descriptions :column="2" border class="mt-6">
             <el-descriptions-item label="厂商">{{ font.vendor }}</el-descriptions-item>
             <el-descriptions-item label="版本">{{ font.version }}</el-descriptions-item>
             <el-descriptions-item label="分类">{{ font.category || '-' }}</el-descriptions-item>
-            <el-descriptions-item label="许可">{{ font.licenseId }}</el-descriptions-item>
             <el-descriptions-item label="语言">{{ font.languages.join(', ') || '-' }}</el-descriptions-item>
             <el-descriptions-item label="格式">{{ font.formats.join(', ') || '-' }}</el-descriptions-item>
             <el-descriptions-item label="字重">{{ font.weights.join(', ') || '-' }}</el-descriptions-item>
-            <el-descriptions-item label="字数">{{ font.glyphCount ?? '-' }}</el-descriptions-item>
             <el-descriptions-item label="文件大小">{{ font.fileSize ? formatSize(font.fileSize) : '-' }}</el-descriptions-item>
             <el-descriptions-item label="下载次数">{{ font.downloadCount }}</el-descriptions-item>
           </el-descriptions>
-
-          <div v-if="font.tags.length" class="mt-4 flex flex-wrap gap-2">
-            <el-tag v-for="tag in font.tags" :key="tag" type="info" size="small">{{ tag }}</el-tag>
-          </div>
 
           <el-link
             v-if="font.officialUrl"
@@ -79,42 +72,52 @@
         <img :src="font.previewPath" alt="预览" class="w-full rounded-lg border border-gray-200" />
       </div>
 
-      <el-card v-if="font.content" class="prose max-w-none">
-        <div v-html="renderedContent" />
-      </el-card>
+      <div v-if="font.content" class="mb-8 flex gap-8 items-start">
+        <div class="w-[600px] shrink-0 bg-white shadow-md rounded-xl p-4">
+          <MdPreview :model-value="font.content" class="md-preview-full" />
+        </div>
+        <div v-if="recommendFonts.length" class="flex-1 min-w-0 bg-white shadow-md rounded-xl p-4">
+          <h3 class="text-lg font-bold text-gray-900 mb-3">推荐字体</h3>
+          <div class="grid grid-cols-2 gap-3">
+            <div
+              v-for="rf in recommendFonts"
+              :key="rf.slug"
+              class="cursor-pointer hover:bg-white rounded-lg transition"
+              @click="goFont(rf.slug)"
+            >
+              <div class="aspect-[3/2] bg-gray-100 rounded overflow-hidden mb-2">
+                <img v-if="rf.coverPath" :src="rf.coverPath" class="w-full h-full object-cover" />
+                <div v-else class="w-full h-full flex items-center justify-center text-gray-300 text-2xl font-bold">
+                  {{ (rf.nameZh || rf.nameEn || '?')[0] }}
+                </div>
+              </div>
+              <p class="text-xs font-medium text-gray-900 truncate">{{ rf.nameZh || rf.nameEn || rf.slug }}</p>
+              <p class="text-xs text-gray-500 truncate">{{ rf.vendor }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
     </template>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
-import { useRoute } from 'vue-router';
+import { ref, onMounted } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { api } from '../utils/api.ts';
-import type { Font, DownloadUrls } from '@shared/types/index.ts';
+import { MdPreview } from 'md-editor-v3';
+import 'md-editor-v3/lib/preview.css';
+import type { Font, FontListItem, DownloadUrls } from '@shared/types/index.ts';
 
 const route = useRoute();
+const router = useRouter();
 const font = ref<Font | null>(null);
 const loading = ref(true);
 const downloadUrls = ref<DownloadUrls | null>(null);
-
-const renderedContent = computed(() => {
-  if (!font.value?.content) return '';
-  return simpleMarkdown(font.value.content);
-});
-
-function simpleMarkdown(md: string): string {
-  return md
-    .replace(/^### (.+)$/gm, '<h3>$1</h3>')
-    .replace(/^## (.+)$/gm, '<h2>$1</h2>')
-    .replace(/^# (.+)$/gm, '<h1>$1</h1>')
-    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\*(.+?)\*/g, '<em>$1</em>')
-    .replace(/\n\n/g, '</p><p>')
-    .replace(/^(.+)$/gm, (m) => (m.startsWith('<') ? m : `<p>${m}</p>`));
-}
+const recommendFonts = ref<FontListItem[]>([]);
 
 function downloadLabel(key: string): string {
-  const map: Record<string, string> = { githubRaw: 'GitHub 直链', jsdelivr: 'jsDelivr CDN', githack: 'GitHack CDN', cloudDrive: '百度网盘' };
+  const map: Record<string, string> = { githubRaw: '下载链接1', jsdelivr: '下载链接2', githack: '下载链接3', cloudDrive: '百度网盘下载' };
   return map[key] || key;
 }
 
@@ -124,21 +127,39 @@ function formatSize(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-async function onDownload() {
-  if (!font.value) return;
-  try {
-    downloadUrls.value = await api.recordDownload(font.value.slug);
-  } catch {
-    // ignore
+async function onDownloadClick(url: string) {
+  if (font.value) {
+    try {
+      await api.recordDownload(font.value.slug);
+    } catch {
+      // ignore
+    }
   }
+  window.open(url, '_blank');
+}
+
+function goFont(slug: string) {
+  router.push(`/fonts/${slug}`);
 }
 
 onMounted(async () => {
   const slug = route.params.slug as string;
   try {
     font.value = await api.getFont(slug);
+    downloadUrls.value = await api.getDownloadUrls(slug);
+    recommendFonts.value = await api.getRecommendFonts(slug);
   } finally {
     loading.value = false;
   }
 });
 </script>
+
+<style scoped>
+.md-preview-full :deep(img) {
+  width: 100%;
+  height: auto;
+}
+.download-buttons .el-button + .el-button {
+  margin-left: 0;
+}
+</style>

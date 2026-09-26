@@ -185,6 +185,12 @@ export async function findFontBySlug(slug: string) {
   return toCamelFont(row);
 }
 
+export async function findRecommendFonts(category: string, excludeSlug: string, limit = 10) {
+  const sql = FONT_LIST_SQL + ` WHERE f.category = ? AND f.slug != ? GROUP BY f.id ORDER BY f.added_at DESC LIMIT ?`;
+  const rows = await allRows<FontRow>(sql, [category, excludeSlug, limit]);
+  return rows.map(toCamelFont);
+}
+
 export async function findFontById(id: number) {
   const sql = FONT_LIST_SQL + ` WHERE f.id = ? GROUP BY f.id`;
   const row = await getRow<FontRow>(sql, [id]);
