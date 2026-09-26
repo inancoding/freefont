@@ -1,5 +1,5 @@
 <template>
-  <div class="max-w-5xl mx-auto mt-8">
+  <div class="max-w-7xl mx-auto mt-8">
     <div v-if="loading" v-loading="true" class="min-h-[300px]" />
 
     <el-empty v-else-if="!font" description="字体不存在" />
@@ -34,9 +34,20 @@
         </div>
 
         <div class="flex-1 min-w-0">
-          <h1 class="text-2xl font-bold text-gray-900">
-            {{ font.nameZh || font.nameEn || font.slug }}
-          </h1>
+          <div class="flex items-center justify-between gap-4">
+            <h1 class="text-2xl font-bold text-gray-900">
+              {{ font.nameZh || font.nameEn || font.slug }}
+            </h1>
+            <el-link
+              v-if="font.officialUrl"
+              :href="font.officialUrl"
+              type="primary"
+              target="_blank"
+              class="shrink-0"
+            >
+              来源页面 →
+            </el-link>
+          </div>
           <p v-if="font.nameZh && font.nameEn" class="text-gray-500 mt-1">{{ font.nameEn }}</p>
 
           <div v-if="font.tags.length" class="mt-2 flex flex-wrap gap-2">
@@ -50,21 +61,13 @@
             <el-descriptions-item label="版本">{{ font.version }}</el-descriptions-item>
             <el-descriptions-item label="分类">{{ font.category || '-' }}</el-descriptions-item>
             <el-descriptions-item label="语言">{{ font.languages.join(', ') || '-' }}</el-descriptions-item>
+            <el-descriptions-item label="授权">{{ font.licenseId || '-' }}</el-descriptions-item>
             <el-descriptions-item label="格式">{{ font.formats.join(', ') || '-' }}</el-descriptions-item>
+            <el-descriptions-item label="字数">{{ font.glyphCount || '-' }}</el-descriptions-item>
             <el-descriptions-item label="字重">{{ font.weights.join(', ') || '-' }}</el-descriptions-item>
             <el-descriptions-item label="文件大小">{{ font.fileSize ? formatSize(font.fileSize) : '-' }}</el-descriptions-item>
             <el-descriptions-item label="下载次数">{{ font.downloadCount }}</el-descriptions-item>
           </el-descriptions>
-
-          <el-link
-            v-if="font.officialUrl"
-            :href="font.officialUrl"
-            type="primary"
-            target="_blank"
-            class="mt-4"
-          >
-            官方网站 →
-          </el-link>
         </div>
       </div>
 
@@ -72,8 +75,8 @@
         <img :src="font.previewPath" alt="预览" class="w-full rounded-lg border border-gray-200" />
       </div>
 
-      <div v-if="font.content" class="mb-8 flex gap-8 items-start">
-        <div class="w-[600px] shrink-0 bg-white shadow-md rounded-xl p-4">
+      <div v-if="font.content" class="mb-8 flex gap-6 items-start">
+        <div class="w-[800px] shrink-0 bg-white shadow-md rounded-xl p-4">
           <MdPreview :model-value="font.content" class="md-preview-full" />
         </div>
         <div v-if="recommendFonts.length" class="flex-1 min-w-0 bg-white shadow-md rounded-xl p-4">
@@ -156,8 +159,12 @@ onMounted(async () => {
 
 <style scoped>
 .md-preview-full :deep(img) {
-  width: 100%;
-  height: auto;
+  width: 100% !important;
+  height: auto !important;
+  max-width: 100% !important;
+}
+.md-preview-full :deep(.md-editor-preview-wrapper) {
+  padding: 0;
 }
 .download-buttons .el-button + .el-button {
   margin-left: 0;

@@ -10,10 +10,10 @@
           <el-menu :default-active="route.path" mode="horizontal" :ellipsis="false" router class="!border-b-0">
             <el-menu-item index="/">首页</el-menu-item>
             <el-menu-item index="/fonts">免费字体</el-menu-item>
-            <el-menu-item index="/font-assistant">字体助手</el-menu-item>
+            <!-- <el-menu-item index="/font-assistant">字体助手</el-menu-item>
             <el-menu-item index="/creators">字体创作者</el-menu-item>
             <el-menu-item index="/download">全站下载</el-menu-item>
-            <el-menu-item index="/submit">字体提交</el-menu-item>
+            <el-menu-item index="/submit">字体提交</el-menu-item> -->
             <el-menu-item index="/about">关于我们</el-menu-item>
           </el-menu>
           <el-popover
@@ -80,7 +80,7 @@
         <router-view />
       </el-main>
       <el-footer class="!h-auto py-6 bg-gray-900 text-gray-300 shrink-0">
-        <div class="max-w-7xl mx-auto px-4">
+        <div class="max-w-7xl mx-auto">
           <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
               <div class="flex items-center mb-4" style="font-family: 'Inter', sans-serif; font-weight: 700;">
@@ -98,13 +98,9 @@
             <div>
               <h4 class="text-white font-medium mb-3">快速链接</h4>
               <ul class="space-y-2 text-sm">
-                <li><router-link to="/" class="hover:text-white transition-colors">首页</router-link></li>
                 <li><router-link to="/fonts" class="hover:text-white transition-colors">免费字体</router-link></li>
-                <li><router-link to="/creators" class="hover:text-white transition-colors">字体创作者</router-link></li>
-                <li><router-link to="/download" class="hover:text-white transition-colors">全站下载</router-link></li>
                 <li><router-link to="/submit" class="hover:text-white transition-colors">字体提交</router-link></li>
                 <li><router-link to="/about" class="hover:text-white transition-colors">关于我们</router-link></li>
-                <li><router-link to="/font-assistant" class="hover:text-white transition-colors">字体助手</router-link></li>
               </ul>
             </div>
 
