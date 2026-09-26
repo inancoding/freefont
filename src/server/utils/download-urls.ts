@@ -5,9 +5,9 @@ export function computeDownloadUrls(slug: string, version: string, cloudDriveUrl
   const tag = `${slug}-v${version}`;
   const artifact = `${slug}-${version}.zip`;
   return {
-    githubRaw: `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/${tag}/zips/${artifact}`,
-    jsdelivr: `https://cdn.jsdelivr.net/gh/${GITHUB_OWNER}/${GITHUB_REPO}@${tag}/zips/${artifact}`,
-    githack: `https://raw.githack.com/${GITHUB_OWNER}/${GITHUB_REPO}/${tag}/zips/${artifact}`,
+    githubRaw: `https://github.com/${GITHUB_OWNER}/${GITHUB_REPO}/releases/download/${tag}/${artifact}`,
+    jsdelivr: `https://github.com/${GITHUB_OWNER}/${GITHUB_REPO}/releases/download/${tag}/${artifact}`,
+    githack: `https://github.com/${GITHUB_OWNER}/${GITHUB_REPO}/releases/download/${tag}/${artifact}`,
     ...(cloudDriveUrl ? { cloudDrive: cloudDriveUrl } : {}),
   };
 }

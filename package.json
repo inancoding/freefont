@@ -10,14 +10,14 @@
   },
   "scripts": {
     "dev": "concurrently -n server,vite -c blue,green \"npm run dev:server\" \"npm run dev:client\"",
-    "dev:server": "tsx watch --env-file=.env.development src/server/index.ts",
+    "dev:server": "tsx watch --use-system-ca --env-file=.env.development src/server/index.ts",
     "dev:client": "vite",
     "build": "npm run build:client && npm run build:server",
     "build:client": "vite build",
     "build:server": "tsc -p tsconfig.server.json",
-    "start": "node --env-file=.env.production dist/server/index.js",
-    "db:migrate": "tsx --env-file=.env.development db/migrate.ts",
-    "db:migrate:prod": "tsx --env-file=.env.production db/migrate.ts",
+    "start": "node --use-system-ca --env-file=.env.production dist/server/index.js",
+    "db:migrate": "tsx --use-system-ca --env-file=.env.development db/migrate.ts",
+    "db:migrate:prod": "tsx --use-system-ca --env-file=.env.production db/migrate.ts",
     "db:reset": "rm -f db/free-font.db && npm run db:migrate",
     "typecheck": "vue-tsc --noEmit -p tsconfig.client.json && tsc --noEmit -p tsconfig.server.json"
   },

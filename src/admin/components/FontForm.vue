@@ -117,6 +117,7 @@
       <el-col :span="6">
         <el-form-item label="ZIP 文件">
           <el-upload
+            ref="zipUploadRef"
             :auto-upload="false"
             :show-file-list="false"
             :limit="1"
@@ -158,7 +159,7 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted, onUnmounted } from 'vue';
 import { ElMessage } from 'element-plus';
-import type { UploadFile } from 'element-plus';
+import type { UploadFile, UploadInstance } from 'element-plus';
 import { MdEditor } from 'md-editor-v3';
 import 'md-editor-v3/lib/style.css';
 import { adminApi } from '../utils/api.ts';
@@ -172,6 +173,7 @@ const props = defineProps<{ initial?: Font }>();
 const emit = defineEmits<{ submit: [data: FontFormData]; cancel: [] }>();
 
 const editorRef = ref<InstanceType<typeof MdEditor> | null>(null);
+const zipUploadRef = ref<UploadInstance | null>(null);
 const licenses = ref<License[]>([]);
 const tagsInput = ref('');
 
@@ -321,35 +323,57 @@ function insertTextToEditor(text: string) {
 
 async function onImageChange(file: UploadFile) {
   if (!file.raw) return;
-  const result = await adminApi.uploadImage(file.raw, 'covers');
-  form.coverPath = result.url;
-  ElMessage.success('封面图上传成功');
+  try {
+    const result = await adminApi.uploadImage(file.raw, 'covers');
+    form.coverPath = result.url;
+    ElMessage.success('封面图上传成功');
+  } catch (error) {
+    ElMessage.error('封面图上传失败: ' + (error instanceof Error ? error.message : '未知错误'));
+  }
 }
 
 async function onPreviewChange(file: UploadFile) {
   if (!file.raw) return;
-  const result = await adminApi.uploadImage(file.raw, 'covers');
-  form.previewPath = result.url;
-  ElMessage.success('预览图上传成功');
+  try {
+    const result = await adminApi.uploadImage(file.raw, 'covers');
+    form.previewPath = result.url;
+    ElMessage.success('预览图上传成功');
+  } catch (error) {
+    ElMessage.error('预览图上传失败: ' + (error instanceof Error ? error.message : '未知错误'));
+  }
 }
 
 async function onZipChange(file: UploadFile) {
   if (!file.raw) return;
-  const result = await adminApi.uploadZip(file.raw, form.slug, form.version);
-  form.downloadUrl = result.downloadUrls.githubRaw;
-  form.sha256 = result.sha256;
-  form.fileSize = result.fileSize;
-  ElMessage.success('ZIP 文件上传成功');
+  try {
+    const result = await adminApi.uploadZip(file.raw, form.slug, form.version);
+    form.downloadUrl = result.downloadUrls.githubRaw;
+    form.sha256 = result.sha256;
+    form.fileSize = result.fileSize;
+    zipUploadRef.value?.clearFiles();
+    ElMessage.success('ZIP 文件上传成功');
+  } catch (error) {
+    ElMessage.error('ZIP 文件上传失败: ' + (error instanceof Error ? error.message : '未知错误'));
+  }
 }
 
-async function onUploadImg(files: File[]): Promise<{ url: string; name?: string }[]> {
-  const results = await Promise.all(
-    files.map(async (file) => {
-      const result = await adminApi.uploadImage(file, 'content');
-      return { url: result.url, name: file.name };
-    })
-  );
-  return results;
+async function onUploadImg(
+  files: File[],
+  callBack: (urls: string[] | Array<{ url: string; alt: string; title: string }>) => void,
+) {
+  try {
+    const results = await Promise.all(
+      files.map(async (file) => {
+        const result = await adminApi.uploadImage(file, 'content');
+        const fullUrl = window.location.origin + result.url;
+        return { url: fullUrl, alt: file.name, title: file.name };
+      }),
+    );
+    callBack(results);
+    ElMessage.success('图片上传成功');
+  } catch (error) {
+    ElMessage.error('图片上传失败: ' + (error instanceof Error ? error.message : '未知错误'));
+  }
 }
 
 function onSubmit() {
