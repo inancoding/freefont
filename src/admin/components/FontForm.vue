@@ -85,7 +85,7 @@
     <el-row :gutter="16">
       <el-col :span="6">
         <el-form-item label="标签">
-          <el-input v-model="tagsInput" placeholder="逗号分隔，如：免费, 商用, 黑体" />
+          <el-input v-model="tagsInput" placeholder="逗号分隔，如：免费, 商用, 黑体" @blur="normalizeTagsInput" />
         </el-form-item>
       </el-col>
       <el-col :span="6">
@@ -134,7 +134,7 @@
     <el-row :gutter="16">
       <el-col :span="8">
         <el-form-item label="网盘链接">
-          <el-input v-model="form.cloudDriveUrl" placeholder="备用下载链接" />
+          <el-input v-model="form.cloudDriveUrl" placeholder="备用下载链接" @paste="onPasteCloudDrive" />
         </el-form-item>
       </el-col>
       <el-col :span="4">
@@ -376,8 +376,22 @@ async function onUploadImg(
   }
 }
 
+function normalizeTagsInput() {
+  tagsInput.value = tagsInput.value.replace(/，/g, ',');
+}
+
+function onPasteCloudDrive(e: ClipboardEvent) {
+  const text = e.clipboardData?.getData('text/plain');
+  if (!text) return;
+  const match = text.match(/https?:\/\/[^\s]+/);
+  if (match) {
+    e.preventDefault();
+    form.cloudDriveUrl = match[0];
+  }
+}
+
 function onSubmit() {
-  form.tags = tagsInput.value.split(',').map((t) => t.trim()).filter(Boolean);
+  form.tags = tagsInput.value.replace(/，/g, ',').split(',').map((t) => t.trim()).filter(Boolean);
   emit('submit', { ...form });
 }
 </script>

@@ -38,7 +38,7 @@ const imageStorage = multer.diskStorage({
   },
 });
 
-const uploadZip = multer({ storage: zipStorage, limits: { fileSize: 100 * 1024 * 1024 } });
+const uploadZip = multer({ storage: zipStorage, limits: { fileSize: 500 * 1024 * 1024 } });
 const uploadImage = multer({
   storage: imageStorage,
   limits: { fileSize: 10 * 1024 * 1024 },
