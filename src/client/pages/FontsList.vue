@@ -89,9 +89,8 @@ import { api } from '../utils/api.ts';
 import type { FontListItem } from '@shared/types/index.ts';
 
 const store = useFontStore();
-const params = store.params;
-const categoryValue = ref(params.category || '');
-const languageValue = ref(params.language || '');
+const categoryValue = ref(store.params.category || '');
+const languageValue = ref(store.params.language || '');
 const allFonts = ref<FontListItem[]>([]);
 const loadingMore = ref(false);
 const currentPage = ref(1);
@@ -99,7 +98,7 @@ const pageSize = 24;
 const newFontIds = ref(new Set<number>());
 const isInitialLoad = ref(true);
 
-const sortValue = computed(() => `${params.sort}-${params.order}`);
+const sortValue = computed(() => `${store.params.sort}-${store.params.order}`);
 const hasMore = computed(() => allFonts.value.length < store.total);
 
 function setCategory(cat: string) {
@@ -125,9 +124,9 @@ function onSortChange(val: string) {
 }
 
 async function loadInitial() {
-  const currentSort = params.sort || 'added_at';
-  const currentOrder = params.order || 'desc';
-  const currentSearch = params.search || '';
+  const currentSort = store.params.sort || 'added_at';
+  const currentOrder = store.params.order || 'desc';
+  const currentSearch = store.params.search || '';
   
   store.loading = true;
   isInitialLoad.value = true;
@@ -162,9 +161,9 @@ async function loadMore() {
     const result = await api.getFonts({
       page: currentPage.value,
       pageSize,
-      sort: params.sort,
-      order: params.order,
-      search: params.search || undefined,
+      sort: store.params.sort,
+      order: store.params.order,
+      search: store.params.search || undefined,
       category: categoryValue.value || undefined,
       language: languageValue.value || undefined,
     } as Record<string, string | number>);
@@ -187,7 +186,7 @@ watch(() => store.params.search, () => {
 });
 
 onMounted(() => {
-  if (!params.search) {
+  if (!store.params.search) {
     store.resetFilters();
     store.setSort('added_at', 'desc');
   }
