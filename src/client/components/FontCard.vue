@@ -1,12 +1,12 @@
 <template>
   <router-link :to="`/fonts/${font.slug}`" class="block no-underline">
-    <el-card :body-style="{ padding: '0' }" class="hover:shadow-md transition-shadow cursor-pointer overflow-hidden">
+    <el-card :body-style="{ padding: '0' }" class="hover:shadow-md hover:scale-105 transition-all duration-300 cursor-pointer overflow-hidden">
       <div class="aspect-[16/9] bg-gray-100 overflow-hidden">
         <img
           v-if="font.coverPath"
           :src="font.coverPath"
           :alt="font.nameZh || font.nameEn || font.slug"
-          class="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+          class="w-full h-full object-cover"
           loading="lazy"
         />
         <div v-else class="w-full h-full flex items-center justify-center text-gray-400 text-4xl font-bold">

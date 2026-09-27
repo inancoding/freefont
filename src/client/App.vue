@@ -124,6 +124,9 @@
 
           <div class="mt-8 pt-6 border-t border-gray-800 text-center text-xs text-gray-500">
             <p>&copy; 2026 freefont. All rights reserved.</p>
+            <p class="mt-1">
+              <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer" class="hover:text-gray-400 transition-colors">蜀ICP备2025130227号</a>
+            </p>
           </div>
         </div>
       </el-footer>
