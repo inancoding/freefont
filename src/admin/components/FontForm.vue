@@ -349,7 +349,7 @@ async function onUploadImg(
       files.map(async (file) => {
         const result = await adminApi.uploadImage(file, 'content');
         const fullUrl = window.location.origin + result.url;
-        return { url: fullUrl, alt: file.name, title: file.name };
+        return { url: fullUrl, alt: file.name, title: '' };
       }),
     );
     callBack(results);
