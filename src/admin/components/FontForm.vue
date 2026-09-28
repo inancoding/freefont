@@ -3,7 +3,7 @@
     <el-row :gutter="16">
       <el-col :span="6">
         <el-form-item label="Slug" required>
-          <el-input v-model="form.slug" :disabled="!!initial" />
+          <el-input v-model="form.slug" :disabled="!!initial" @paste="onPasteSlug" />
         </el-form-item>
       </el-col>
       <el-col :span="6">
@@ -83,7 +83,7 @@
     </el-row>
 
     <el-row :gutter="16">
-      <el-col :span="6">
+      <el-col :span="4">
         <el-form-item label="标签">
           <el-input v-model="tagsInput" placeholder="逗号分隔，如：免费, 商用, 黑体" @blur="normalizeTagsInput" />
         </el-form-item>
@@ -102,19 +102,6 @@
         </el-form-item>
       </el-col>
       <el-col :span="6">
-        <el-form-item label="预览图">
-          <el-upload
-            :auto-upload="false"
-            :show-file-list="false"
-            accept="image/*"
-            :on-change="onPreviewChange"
-          >
-            <el-button>选择图片</el-button>
-          </el-upload>
-          <span v-if="form.previewPath" class="text-xs text-gray-500 ml-2 truncate">{{ form.previewPath }}</span>
-        </el-form-item>
-      </el-col>
-      <el-col :span="6">
         <el-form-item label="ZIP 文件">
           <el-upload
             ref="zipUploadRef"
@@ -129,14 +116,14 @@
           <span v-if="form.downloadUrl" class="text-xs text-gray-500 ml-2 truncate">{{ form.downloadUrl }}</span>
         </el-form-item>
       </el-col>
-    </el-row>
-
-    <el-row :gutter="16">
       <el-col :span="8">
         <el-form-item label="网盘链接">
           <el-input v-model="form.cloudDriveUrl" placeholder="备用下载链接" @paste="onPasteCloudDrive" />
         </el-form-item>
       </el-col>
+    </el-row>
+
+    <el-row :gutter="16">
       <el-col :span="4">
         <el-form-item label="文件大小">
           <el-input-number v-model="form.fileSize" :min="0" :controls="false" class="w-full" placeholder="bytes" />
@@ -321,6 +308,13 @@ function insertTextToEditor(text: string) {
   }
 }
 
+function onPasteSlug(e: ClipboardEvent) {
+  const text = e.clipboardData?.getData('text/plain');
+  if (!text) return;
+  e.preventDefault();
+  form.slug = text.trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+}
+
 async function onImageChange(file: UploadFile) {
   if (!file.raw) return;
   try {
@@ -329,17 +323,6 @@ async function onImageChange(file: UploadFile) {
     ElMessage.success('封面图上传成功');
   } catch (error) {
     ElMessage.error('封面图上传失败: ' + (error instanceof Error ? error.message : '未知错误'));
-  }
-}
-
-async function onPreviewChange(file: UploadFile) {
-  if (!file.raw) return;
-  try {
-    const result = await adminApi.uploadImage(file.raw, 'covers');
-    form.previewPath = result.url;
-    ElMessage.success('预览图上传成功');
-  } catch (error) {
-    ElMessage.error('预览图上传失败: ' + (error instanceof Error ? error.message : '未知错误'));
   }
 }
 
