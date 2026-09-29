@@ -116,14 +116,6 @@
           <span v-if="form.downloadUrl" class="text-xs text-gray-500 ml-2 truncate">{{ form.downloadUrl }}</span>
         </el-form-item>
       </el-col>
-      <el-col :span="8">
-        <el-form-item label="网盘链接">
-          <el-input v-model="form.cloudDriveUrl" placeholder="备用下载链接" @paste="onPasteCloudDrive" />
-        </el-form-item>
-      </el-col>
-    </el-row>
-
-    <el-row :gutter="16">
       <el-col :span="4">
         <el-form-item label="文件大小">
           <el-input-number v-model="form.fileSize" :min="0" :controls="false" class="w-full" placeholder="bytes" />
@@ -132,6 +124,14 @@
       <el-col :span="4">
         <el-form-item label="字数">
           <el-input-number v-model="form.glyphCount" :min="0" :controls="false" class="w-full" />
+        </el-form-item>
+      </el-col>
+    </el-row>
+
+    <el-row :gutter="16">
+      <el-col :span="16">
+        <el-form-item label="网盘链接">
+          <el-input v-model="form.cloudDriveUrl" placeholder="备用下载链接" @paste="onPasteCloudDrive" />
         </el-form-item>
       </el-col>
     </el-row>
