@@ -1,4 +1,4 @@
-export const CATEGORIES = ['黑体', '宋体', '楷体', '书法体', '手写体', '艺术体', '手绘体'] as const;
+export const CATEGORIES = ['黑体', '宋体', '楷体', '圆体', '手写体', '书法体', '卡通体', '复古体', '创意体', '英文'] as const;
 export type Category = typeof CATEGORIES[number];
 
 export const LANGUAGES = ['简体中文', '繁体中文', '英文', '日文', '韩文'] as const;
