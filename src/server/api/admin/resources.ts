@@ -47,16 +47,25 @@ function scanFolder(folder: string): ImageFile[] {
 async function getReferencedPaths(): Promise<Set<string>> {
   const referenced = new Set<string>();
 
-  const fontRows = await allRows<{ cover_path: string | null; content: string | null }>(
-    'SELECT cover_path, content FROM fonts',
+  const fontRows = await allRows<{ cover_path: string | null; preview_path: string | null; content: string | null }>(
+    'SELECT cover_path, preview_path, content FROM fonts',
   );
   for (const row of fontRows) {
     if (row.cover_path) referenced.add(row.cover_path);
+    if (row.preview_path) referenced.add(row.preview_path);
     if (row.content) {
       const matches = row.content.matchAll(/!\[[^\]]*\]\(([^)\s]+)(?:\s+'[^']*')?\)/g);
       for (const m of matches) {
-        const url = m[1];
-        if (url && url.startsWith('/images/')) referenced.add(url);
+        const raw = m[1];
+        if (!raw) continue;
+        let path = raw;
+        try {
+          const u = new URL(raw);
+          path = u.pathname;
+        } catch {
+          // relative path, keep as-is
+        }
+        if (path.startsWith('/images/')) referenced.add(path);
       }
     }
   }
