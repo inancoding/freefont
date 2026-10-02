@@ -26,10 +26,10 @@ GitHub 仓库 releases 分支               云服务器
 └─────────────────────┘
 ```
 
-- **GitHub releases 分支**：普通字体 ZIP 提交到 `releases` 分支，通过 jsDelivr / GitHack CDN 加速下载
+- **GitHub releases 分支**：普通字体 ZIP 提交到 `releases` 分支，通过 jsDelivr CDN 加速下载
 - **GitHub Releases 附件**：超过 100MB 的超大字体（如 source-han-seri）走传统 Release 附件
 - **云服务器**：运行 Node.js 全栈应用，SQLite 为唯一数据源
-- **下载链接**：GitHub Raw、jsDelivr CDN、GitHack CDN、百度网盘（可选）
+- **下载链接**：GitHub Raw、jsDelivr CDN、百度网盘（可选）
 
 ## 项目结构
 
