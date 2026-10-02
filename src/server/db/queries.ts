@@ -127,9 +127,9 @@ export async function findFonts(params: FontListParams = {}) {
   const values: unknown[] = [];
 
   if (search) {
-    conditions.push(`(f.name_zh LIKE ? OR f.name_en LIKE ? OR f.vendor LIKE ?)`);
+    conditions.push(`(f.name_zh LIKE ? OR f.name_en LIKE ? OR f.vendor LIKE ? OR f.id IN (SELECT font_id FROM font_tags WHERE tag LIKE ?))`);
     const s = `%${search}%`;
-    values.push(s, s, s);
+    values.push(s, s, s, s);
   }
   if (category) {
     conditions.push('f.category = ?');

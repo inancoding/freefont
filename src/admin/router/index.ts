@@ -10,6 +10,7 @@ export const router = createRouter({
     { path: '/fonts', component: () => import('../pages/FontList.vue') },
     { path: '/licenses', component: () => import('../pages/LicenseList.vue') },
     { path: '/banners', component: () => import('../pages/BannerList.vue') },
+    { path: '/resources', component: () => import('../pages/ResourceList.vue') },
     { path: '/login', component: () => import('../pages/Login.vue') },
   ],
 });

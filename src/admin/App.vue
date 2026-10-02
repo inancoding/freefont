@@ -30,6 +30,10 @@
             <el-icon><Picture /></el-icon>
             <span>轮播图管理</span>
           </el-menu-item>
+          <el-menu-item index="/resources">
+            <el-icon><FolderOpened /></el-icon>
+            <span>资源管理</span>
+          </el-menu-item>
         </el-menu>
         <div class="px-4 pb-4 shrink-0">
           <el-popconfirm title="确定要退出登录吗？" confirm-button-text="确定" cancel-button-text="取消" @confirm="onLogout">

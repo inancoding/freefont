@@ -118,4 +118,16 @@ export const adminApi = {
 
   deleteBanner: (id: number) =>
     request<{ deleted: boolean }>(`/admin/banners/${id}`, { method: 'DELETE' }),
+
+  getResources: () =>
+    request<Array<{ path: string; url: string; folder: string; filename: string; size: number; modifiedAt: string }>>('/admin/resources'),
+
+  getUnusedResources: () =>
+    request<Array<{ path: string; url: string; folder: string; filename: string; size: number; modifiedAt: string }>>('/admin/resources/unused'),
+
+  deleteUnusedResources: () =>
+    request<{ deleted: number; total: number }>('/admin/resources/unused', { method: 'DELETE' }),
+
+  deleteResource: (folder: string, filename: string) =>
+    request<{ deleted: boolean }>(`/admin/resources/${folder}/${filename}`, { method: 'DELETE' }),
 };

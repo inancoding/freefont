@@ -11,6 +11,7 @@ import { adminFontRouter } from './api/admin/fonts.js';
 import { adminLicenseRouter } from './api/admin/licenses.js';
 import { adminBannerRouter } from './api/admin/banners.js';
 import { uploadRouter } from './api/admin/upload.js';
+import { resourceRouter } from './api/admin/resources.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..', '..');
@@ -42,6 +43,7 @@ app.use('/api/admin/fonts', adminFontRouter);
 app.use('/api/admin/licenses', adminLicenseRouter);
 app.use('/api/admin/banners', adminBannerRouter);
 app.use('/api/admin/upload', uploadRouter);
+app.use('/api/admin/resources', resourceRouter);
 
 const distPath = join(ROOT, 'dist');
 if (existsSync(distPath)) {
