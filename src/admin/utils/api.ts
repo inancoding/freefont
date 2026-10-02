@@ -63,8 +63,8 @@ export const adminApi = {
       body: JSON.stringify({ username, password }),
     }),
 
-  getFonts: (page = 1, pageSize = 50) =>
-    request<{ data: import('@shared/types/index.ts').FontListItem[]; total: number }>(`/admin/fonts?page=${page}&pageSize=${pageSize}`),
+  getFonts: (page = 1, pageSize = 50, status?: string) =>
+    request<{ data: import('@shared/types/index.ts').FontListItem[]; total: number }>(`/admin/fonts?page=${page}&pageSize=${pageSize}${status ? `&status=${status}` : ''}`),
 
   getFont: (slug: string) => request<import('@shared/types/index.ts').Font>(`/admin/fonts/${slug}`),
 
@@ -75,6 +75,20 @@ export const adminApi = {
     request<import('@shared/types/index.ts').Font>(`/admin/fonts/${slug}`, { method: 'PUT', body: JSON.stringify(data) }),
 
   deleteFont: (slug: string) => request<{ deleted: boolean }>(`/admin/fonts/${slug}`, { method: 'DELETE' }),
+
+  importFonts: (file: File) => {
+    const fd = new FormData();
+    fd.append('file', file);
+    return upload<{
+      created: string[];
+      skipped: string[];
+      errors: { slug: string; error: string }[];
+      rowErrors: { row: number; errors: string[] }[];
+      total: number;
+    }>('/admin/fonts/import', fd);
+  },
+
+  getImportTemplate: () => `${API_BASE}/admin/fonts/import/template`,
 
   getLicenses: (page = 1, pageSize = 20) =>
     request<{ data: import('@shared/types/index.ts').License[]; total: number }>(`/admin/licenses?page=${page}&pageSize=${pageSize}`),

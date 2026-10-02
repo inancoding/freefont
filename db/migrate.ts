@@ -17,6 +17,15 @@ async function migrate() {
     console.log('Loading existing database...');
     const buffer = readFileSync(dbPath);
     db = new SQL.Database(buffer);
+
+    // Add status column before running schema (schema references it in index)
+    const cols = db.exec("PRAGMA table_info(fonts)");
+    const hasStatus = cols.length > 0 && cols[0]!.values.some((row) => row[1] === 'status');
+    if (!hasStatus) {
+      console.log('Adding status column to fonts...');
+      db.run("ALTER TABLE fonts ADD COLUMN status TEXT NOT NULL DEFAULT 'draft'");
+      db.run("UPDATE fonts SET status = 'published'");
+    }
   } else {
     console.log('Creating new database...');
     db = new SQL.Database();

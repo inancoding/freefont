@@ -138,7 +138,11 @@
 
     <el-form-item>
       <el-button type="primary" native-type="submit">{{ initial ? '保存' : '创建' }}</el-button>
+      <el-button v-if="initial && initial.status === 'draft'" type="success" @click="onPublish">发布</el-button>
       <el-button @click="emit('cancel')">取消</el-button>
+      <el-tag v-if="initial" :type="initial.status === 'published' ? 'success' : 'warning'" class="ml-3">
+        {{ initial.status === 'published' ? '已发布' : '待添加' }}
+      </el-tag>
     </el-form-item>
   </el-form>
 </template>
@@ -157,7 +161,7 @@ import { htmlToMarkdown, extractImageUrls, replaceImageUrls } from '../utils/htm
 const WEIGHTS = ['Thin', 'ExtraLight', 'Light', 'Regular', 'Normal', 'Medium', 'SemiBold', 'Bold', 'ExtraBold', 'Black'];
 
 const props = defineProps<{ initial?: Font }>();
-const emit = defineEmits<{ submit: [data: FontFormData]; cancel: [] }>();
+const emit = defineEmits<{ submit: [data: FontFormData]; cancel: []; publish: [data: FontFormData] }>();
 
 const editorRef = ref<InstanceType<typeof MdEditor> | null>(null);
 const zipUploadRef = ref<UploadInstance | null>(null);
@@ -376,5 +380,10 @@ function onPasteCloudDrive(e: ClipboardEvent) {
 function onSubmit() {
   form.tags = tagsInput.value.replace(/，/g, ',').split(',').map((t) => t.trim()).filter(Boolean);
   emit('submit', { ...form });
+}
+
+function onPublish() {
+  form.tags = tagsInput.value.replace(/，/g, ',').split(',').map((t) => t.trim()).filter(Boolean);
+  emit('publish', { ...form });
 }
 </script>

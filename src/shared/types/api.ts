@@ -20,6 +20,7 @@ export interface FontListParams {
   language?: string;
   license?: string;
   tag?: string;
+  status?: 'draft' | 'published';
   sort?: 'added_at' | 'download_count' | 'name';
   order?: 'asc' | 'desc';
   page?: number;

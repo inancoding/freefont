@@ -19,6 +19,7 @@ export interface Font {
   sha256: string | null;
   downloadUrl: string | null;
   cloudDriveUrl: string | null;
+  status: 'draft' | 'published';
   addedAt: string;
   updatedAt: string | null;
   downloadCount: number;
@@ -49,6 +50,7 @@ export interface FontFormData {
   sha256?: string;
   downloadUrl?: string;
   cloudDriveUrl?: string;
+  status?: 'draft' | 'published';
   languages?: string[];
   formats?: string[];
   weights?: string[];

@@ -6,6 +6,7 @@ export interface FontListParams {
   language?: string;
   license?: string;
   tag?: string;
+  status?: 'draft' | 'published';
   sort?: 'added_at' | 'download_count' | 'name';
   order?: 'asc' | 'desc';
   page?: number;
@@ -31,6 +32,7 @@ export interface FontRow {
   sha256: string | null;
   download_url: string | null;
   cloud_drive_url: string | null;
+  status: string;
   added_at: string;
   updated_at: string | null;
   download_count: number;
@@ -77,6 +79,7 @@ function toCamelFont(row: FontRow) {
     sha256: row.sha256,
     downloadUrl: row.download_url,
     cloudDriveUrl: row.cloud_drive_url,
+    status: row.status as 'draft' | 'published',
     addedAt: row.added_at,
     updatedAt: row.updated_at,
     downloadCount: row.download_count,
@@ -118,7 +121,7 @@ const FONT_LIST_SQL = `
 
 export async function findFonts(params: FontListParams = {}) {
   const {
-    search, category, language, license, tag,
+    search, category, language, license, tag, status,
     sort = 'added_at', order = 'desc',
     page = 1, pageSize = 20,
   } = params;
@@ -138,6 +141,10 @@ export async function findFonts(params: FontListParams = {}) {
   if (license) {
     conditions.push('f.license_id = ?');
     values.push(license);
+  }
+  if (status) {
+    conditions.push('f.status = ?');
+    values.push(status);
   }
 
   let sql = FONT_LIST_SQL + ' WHERE 1=1';
@@ -216,6 +223,7 @@ export interface CreateFontData {
   sha256?: string;
   downloadUrl?: string;
   cloudDriveUrl?: string;
+  status?: 'draft' | 'published';
   languages?: string[];
   formats?: string[];
   weights?: string[];
@@ -224,14 +232,15 @@ export interface CreateFontData {
 
 export async function createFont(data: CreateFontData) {
   await runQuery(`
-    INSERT INTO fonts (slug, name_zh, name_en, vendor, version, license_id, description, content, category, official_url, cover_path, preview_path, file_size, glyph_count, sha256, download_url, cloud_drive_url)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO fonts (slug, name_zh, name_en, vendor, version, license_id, description, content, category, official_url, cover_path, preview_path, file_size, glyph_count, sha256, download_url, cloud_drive_url, status)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `, [
     data.slug, data.nameZh ?? null, data.nameEn ?? null, data.vendor, data.version,
     data.licenseId, data.description ?? null, data.content ?? null, data.category ?? null,
     data.officialUrl ?? null, data.coverPath ?? null, data.previewPath ?? null,
     data.fileSize ?? null, data.glyphCount ?? null, data.sha256 ?? null,
     data.downloadUrl ?? null, data.cloudDriveUrl ?? null,
+    data.status ?? 'draft',
   ]);
 
   await runQuery('INSERT INTO downloads (slug, count) VALUES (?, 0)', [data.slug]);
@@ -242,6 +251,32 @@ export async function createFont(data: CreateFontData) {
   await insertAssociations(font.id, data);
   await saveDb();
   return font;
+}
+
+export interface BatchImportResult {
+  created: string[];
+  skipped: string[];
+  errors: { slug: string; error: string }[];
+}
+
+export async function batchCreateFonts(dataList: CreateFontData[]): Promise<BatchImportResult> {
+  const result: BatchImportResult = { created: [], skipped: [], errors: [] };
+
+  for (const data of dataList) {
+    try {
+      const existing = await findFontBySlug(data.slug);
+      if (existing) {
+        result.skipped.push(data.slug);
+        continue;
+      }
+      await createFont({ ...data, status: 'draft' });
+      result.created.push(data.slug);
+    } catch (err) {
+      result.errors.push({ slug: data.slug, error: err instanceof Error ? err.message : String(err) });
+    }
+  }
+
+  return result;
 }
 
 export async function updateFont(slug: string, data: Partial<CreateFontData>) {
@@ -257,6 +292,7 @@ export async function updateFont(slug: string, data: Partial<CreateFontData>) {
     category: 'category', officialUrl: 'official_url', coverPath: 'cover_path',
     previewPath: 'preview_path', fileSize: 'file_size', glyphCount: 'glyph_count',
     sha256: 'sha256', downloadUrl: 'download_url', cloudDriveUrl: 'cloud_drive_url',
+    status: 'status',
   };
 
   for (const [key, col] of Object.entries(fieldMap)) {
