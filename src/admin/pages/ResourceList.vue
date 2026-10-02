@@ -42,7 +42,7 @@
     </div>
 
     <div class="flex-1 px-6 pb-4">
-      <el-table :data="filteredImages" v-loading="loading" stripe class="bg-white rounded-lg border border-gray-200">
+      <el-table :data="pagedImages" v-loading="loading" stripe class="bg-white rounded-lg border border-gray-200">
         <el-table-column label="预览" width="120">
           <template #default="{ row }">
             <el-image
@@ -50,6 +50,8 @@
               fit="cover"
               class="w-[100px] h-[60px] rounded"
               :preview-src-list="[row.url]"
+              preview-teleported
+              :z-index="9999"
             />
           </template>
         </el-table-column>
@@ -88,6 +90,13 @@
         <span class="text-sm text-gray-500">
           共 {{ filteredImages.length }} 个文件，总大小 {{ formatSize(totalSize) }}
         </span>
+        <el-pagination
+          v-model:current-page="currentPage"
+          :page-size="pageSize"
+          :total="filteredImages.length"
+          layout="prev, pager, next"
+          small
+        />
       </div>
     </div>
   </div>
@@ -113,10 +122,17 @@ const loading = ref(false);
 const scanning = ref(false);
 const cleaning = ref(false);
 const folderFilter = ref('');
+const currentPage = ref(1);
+const pageSize = 20;
 
 const filteredImages = computed(() => {
   if (!folderFilter.value) return images.value;
   return images.value.filter((img) => img.folder === folderFilter.value);
+});
+
+const pagedImages = computed(() => {
+  const start = (currentPage.value - 1) * pageSize;
+  return filteredImages.value.slice(start, start + pageSize);
 });
 
 const totalSize = computed(() => images.value.reduce((sum, img) => sum + img.size, 0));
@@ -140,7 +156,7 @@ function formatDate(iso: string): string {
 }
 
 function applyFilter() {
-  // filteredImages is computed, nothing to do
+  currentPage.value = 1;
 }
 
 async function fetchResources() {
