@@ -29,7 +29,7 @@ export interface FontListParams {
 export interface DownloadUrls {
   githubRaw: string;
   jsdelivr: string;
-  githack?: string;
+  ghproxy?: string;
   cloudDrive?: string;
 }
 

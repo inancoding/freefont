@@ -13,16 +13,17 @@ export function computeDownloadUrls(slug: string, version: string, cloudDriveUrl
     return {
       githubRaw: releaseUrl,
       jsdelivr: releaseUrl,
-      githack: releaseUrl,
+      ghproxy: releaseUrl,
       ...(cloudDriveUrl ? { cloudDrive: cloudDriveUrl } : {}),
     };
   }
 
   const path = `${slug}/${artifact}`;
+  const rawUrl = `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/${RELEASES_BRANCH}/${path}`;
   return {
-    githubRaw: `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/${RELEASES_BRANCH}/${path}`,
+    githubRaw: rawUrl,
     jsdelivr: `https://cdn.jsdelivr.net/gh/${GITHUB_OWNER}/${GITHUB_REPO}@${RELEASES_BRANCH}/${path}`,
-    githack: `https://raw.githack.com/${GITHUB_OWNER}/${GITHUB_REPO}/${RELEASES_BRANCH}/${path}`,
+    ghproxy: `https://ghproxy.com/${rawUrl}`,
     ...(cloudDriveUrl ? { cloudDrive: cloudDriveUrl } : {}),
   };
 }
