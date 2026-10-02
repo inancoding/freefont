@@ -4,90 +4,91 @@ import { readFileSync } from 'node:fs';
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN || '';
 const GITHUB_OWNER = process.env.GITHUB_OWNER || 'inancoding';
 const GITHUB_REPO = process.env.GITHUB_REPO || 'freefont';
+const RELEASES_BRANCH = 'releases';
 
 const octokit = new Octokit({ auth: GITHUB_TOKEN });
 
-export async function uploadZipToGithub(filePath: string, slug: string, version: string) {
-  const tag = `${slug}-v${version}`;
-  const filename = `${slug}-${version}.zip`;
-  const content = readFileSync(filePath);
-
-  let release;
+async function ensureReleasesBranch() {
   try {
-    const { data } = await octokit.repos.getReleaseByTag({
+    await octokit.repos.getBranch({
       owner: GITHUB_OWNER,
       repo: GITHUB_REPO,
-      tag,
+      branch: RELEASES_BRANCH,
     });
-    release = data;
   } catch {
-    const { data } = await octokit.repos.createRelease({
+    const { data: mainRef } = await octokit.git.getRef({
       owner: GITHUB_OWNER,
       repo: GITHUB_REPO,
-      tag_name: tag,
-      name: `${slug} v${version}`,
-      body: `Font release: ${slug} v${version}`,
-      draft: false,
-      prerelease: false,
+      ref: 'heads/main',
     });
-    release = data;
-  }
-
-  const existingAsset = release.assets.find((a) => a.name === filename);
-  if (existingAsset) {
-    await octokit.repos.deleteReleaseAsset({
+    await octokit.git.createRef({
       owner: GITHUB_OWNER,
       repo: GITHUB_REPO,
-      asset_id: existingAsset.id,
+      ref: `refs/heads/${RELEASES_BRANCH}`,
+      sha: mainRef.object.sha,
     });
   }
+}
 
-  await octokit.repos.uploadReleaseAsset({
+export async function uploadZipToGithub(filePath: string, slug: string, version: string) {
+  const filename = `${slug}-${version}.zip`;
+  const path = `${slug}/${filename}`;
+  const content = readFileSync(filePath);
+  const base64 = content.toString('base64');
+
+  await ensureReleasesBranch();
+
+  let sha: string | undefined;
+  try {
+    const { data } = await octokit.repos.getContent({
+      owner: GITHUB_OWNER,
+      repo: GITHUB_REPO,
+      path,
+      ref: RELEASES_BRANCH,
+    });
+    if (!Array.isArray(data) && data.sha) {
+      sha = data.sha;
+    }
+  } catch {
+    // File doesn't exist yet
+  }
+
+  const params: Record<string, unknown> = {
     owner: GITHUB_OWNER,
     repo: GITHUB_REPO,
-    release_id: release.id,
-    name: filename,
-    data: content as unknown as string,
-    headers: {
-      'content-type': 'application/zip',
-      'content-length': content.length,
-    },
-  });
+    path,
+    message: `Upload ${slug} v${version}`,
+    content: base64,
+    branch: RELEASES_BRANCH,
+  };
+  if (sha) params.sha = sha;
+
+  await octokit.repos.createOrUpdateFileContents(params as any);
 }
 
 export async function deleteZipFromGithub(slug: string, version: string) {
-  const tag = `${slug}-v${version}`;
   const filename = `${slug}-${version}.zip`;
+  const path = `${slug}/${filename}`;
 
   try {
-    const { data: release } = await octokit.repos.getReleaseByTag({
+    const { data } = await octokit.repos.getContent({
       owner: GITHUB_OWNER,
       repo: GITHUB_REPO,
-      tag,
+      path,
+      ref: RELEASES_BRANCH,
     });
 
-    const asset = release.assets.find((a) => a.name === filename);
-    if (asset) {
-      await octokit.repos.deleteReleaseAsset({
+    if (!Array.isArray(data) && data.sha) {
+      await octokit.repos.deleteFile({
         owner: GITHUB_OWNER,
         repo: GITHUB_REPO,
-        asset_id: asset.id,
-      });
-    }
-
-    if (release.assets.length === 0) {
-      await octokit.repos.deleteRelease({
-        owner: GITHUB_OWNER,
-        repo: GITHUB_REPO,
-        release_id: release.id,
-      });
-      await octokit.git.deleteRef({
-        owner: GITHUB_OWNER,
-        repo: GITHUB_REPO,
-        ref: `tags/${tag}`,
+        path,
+        message: `Delete ${slug} v${version}`,
+        sha: data.sha,
+        branch: RELEASES_BRANCH,
       });
     }
   } catch {
-    // Release might not exist, ignore
+    // File or branch doesn't exist, ignore
   }
 }
