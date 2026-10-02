@@ -81,14 +81,14 @@
         </div>
         <div v-if="recommendFonts.length" class="flex-1 min-w-0 bg-white shadow-md rounded-xl p-4">
           <h3 class="text-lg font-bold text-gray-900 mb-3">推荐字体</h3>
-          <div class="grid grid-cols-2 gap-3">
+          <div class="flex flex-wrap gap-3">
             <div
               v-for="rf in recommendFonts"
               :key="rf.slug"
-              class="cursor-pointer hover:bg-white rounded-lg transition"
+              class="w-[206px] cursor-pointer hover:bg-white rounded-lg transition"
               @click="goFont(rf.slug)"
             >
-              <div class="aspect-[3/2] bg-gray-100 rounded overflow-hidden mb-2">
+              <div class="w-[206px] h-[116px] bg-gray-100 rounded overflow-hidden mb-2">
                 <img v-if="rf.coverPath" :src="rf.coverPath" class="w-full h-full object-cover" />
                 <div v-else class="w-full h-full flex items-center justify-center text-gray-300 text-2xl font-bold">
                   {{ (rf.nameZh || rf.nameEn || '?')[0] }}
