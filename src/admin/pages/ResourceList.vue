@@ -86,16 +86,13 @@
         </el-table-column>
       </el-table>
 
-      <div class="flex justify-between items-center mt-4">
-        <span class="text-sm text-gray-500">
-          共 {{ filteredImages.length }} 个文件，总大小 {{ formatSize(totalSize) }}
-        </span>
+      <div class="flex justify-end mt-4">
         <el-pagination
           v-model:current-page="currentPage"
-          :page-size="pageSize"
+          v-model:page-size="pageSize"
           :total="filteredImages.length"
-          layout="prev, pager, next"
-          small
+          :page-sizes="[10, 20, 50]"
+          layout="total, sizes, prev, pager, next"
         />
       </div>
     </div>
@@ -123,7 +120,7 @@ const scanning = ref(false);
 const cleaning = ref(false);
 const folderFilter = ref('');
 const currentPage = ref(1);
-const pageSize = 20;
+const pageSize = ref(20);
 
 const filteredImages = computed(() => {
   if (!folderFilter.value) return images.value;
@@ -131,8 +128,8 @@ const filteredImages = computed(() => {
 });
 
 const pagedImages = computed(() => {
-  const start = (currentPage.value - 1) * pageSize;
-  return filteredImages.value.slice(start, start + pageSize);
+  const start = (currentPage.value - 1) * pageSize.value;
+  return filteredImages.value.slice(start, start + pageSize.value);
 });
 
 const totalSize = computed(() => images.value.reduce((sum, img) => sum + img.size, 0));

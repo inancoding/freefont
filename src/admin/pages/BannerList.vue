@@ -19,6 +19,8 @@
               fit="cover"
               class="w-[160px] h-[80px] rounded"
               :preview-src-list="[row.imagePath]"
+              preview-teleported
+              :z-index="9999"
             />
             <span v-else class="text-gray-400 text-sm">未上传</span>
           </template>

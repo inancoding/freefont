@@ -5,7 +5,7 @@ const GITHUB_TOKEN = process.env.GITHUB_TOKEN || '';
 const GITHUB_OWNER = process.env.GITHUB_OWNER || 'inancoding';
 const GITHUB_REPO = process.env.GITHUB_REPO || 'freefont';
 const RELEASES_BRANCH = 'releases';
-const OVERSIZED_SLUGS = new Set(['source-han-seri']);
+const OVERSIZED_SLUGS = new Set(['source-han-seri', 'source-han-sans']);
 
 const octokit = new Octokit({ auth: GITHUB_TOKEN });
 

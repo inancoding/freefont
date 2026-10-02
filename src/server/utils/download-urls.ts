@@ -2,7 +2,7 @@ const GITHUB_OWNER = process.env.GITHUB_OWNER || 'inancoding';
 const GITHUB_REPO = process.env.GITHUB_REPO || 'freefont';
 const RELEASES_BRANCH = 'releases';
 
-const OVERSIZED_SLUGS = new Set(['source-han-seri']);
+const OVERSIZED_SLUGS = new Set(['source-han-seri', 'source-han-sans']);
 
 export function computeDownloadUrls(slug: string, version: string, cloudDriveUrl?: string | null) {
   const artifact = `${slug}-${version}.zip`;
