@@ -15,16 +15,19 @@
 ## 架构
 
 ```
-GitHub 仓库（仅存储 ZIP）                云服务器
+GitHub 仓库 releases 分支               云服务器
 ┌─────────────────────┐               ┌──────────────────────────┐
-│  zips/*.zip         │  下载链接指向  │  Express（端口 3001）     │
-│                     │ ────────────→ │  ├── /api/* REST API      │
-│  CI 自动创建 Release │               │  ├── 静态文件（Vue SPA）  │
-└─────────────────────┘               │  └── 图片（public/images）│
-                                      └──────────────────────────┘
+│  slug/slug-ver.zip  │  CDN 加速下载  │  Express（端口 3001）     │
+│  （普通字体 ZIP）    │ ────────────→ │  ├── /api/* REST API      │
+│                     │               │  ├── 静态文件（Vue SPA）  │
+│  超大文件走 Release  │               │  └── 图片（public/images）│
+│  附件（如 source-han │               └──────────────────────────┘
+│  -seri > 100MB）    │
+└─────────────────────┘
 ```
 
-- **GitHub**：仅存储字体 ZIP 文件，CI 自动创建 tag 和 Release
+- **GitHub releases 分支**：普通字体 ZIP 提交到 `releases` 分支，通过 jsDelivr / GitHack CDN 加速下载
+- **GitHub Releases 附件**：超过 100MB 的超大字体（如 source-han-seri）走传统 Release 附件
 - **云服务器**：运行 Node.js 全栈应用，SQLite 为唯一数据源
 - **下载链接**：GitHub Raw、jsDelivr CDN、GitHack CDN、百度网盘（可选）
 

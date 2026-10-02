@@ -5,6 +5,7 @@ const GITHUB_TOKEN = process.env.GITHUB_TOKEN || '';
 const GITHUB_OWNER = process.env.GITHUB_OWNER || 'inancoding';
 const GITHUB_REPO = process.env.GITHUB_REPO || 'freefont';
 const RELEASES_BRANCH = 'releases';
+const OVERSIZED_SLUGS = new Set(['source-han-seri']);
 
 const octokit = new Octokit({ auth: GITHUB_TOKEN });
 
@@ -30,7 +31,63 @@ async function ensureReleasesBranch() {
   }
 }
 
+async function uploadOversizedReleaseAsset(filePath: string, slug: string, version: string) {
+  const tag = `${slug}-v${version}`;
+  const filename = `${slug}-${version}.zip`;
+
+  let release;
+  try {
+    const { data } = await octokit.repos.getReleaseByTag({
+      owner: GITHUB_OWNER, repo: GITHUB_REPO, tag,
+    });
+    release = data;
+  } catch {
+    const { data } = await octokit.repos.createRelease({
+      owner: GITHUB_OWNER, repo: GITHUB_REPO,
+      tag_name: tag, name: tag, draft: false, prerelease: false,
+    });
+    release = data;
+  }
+
+  const existing = release.assets.find((a) => a.name === filename);
+  if (existing) {
+    await octokit.repos.deleteReleaseAsset({
+      owner: GITHUB_OWNER, repo: GITHUB_REPO, asset_id: existing.id,
+    });
+  }
+
+  const content = readFileSync(filePath);
+  await octokit.repos.uploadReleaseAsset({
+    owner: GITHUB_OWNER, repo: GITHUB_REPO,
+    release_id: release.id, name: filename, data: content as any,
+  });
+}
+
+async function deleteOversizedReleaseAsset(slug: string, version: string) {
+  const tag = `${slug}-v${version}`;
+  const filename = `${slug}-${version}.zip`;
+
+  try {
+    const { data: release } = await octokit.repos.getReleaseByTag({
+      owner: GITHUB_OWNER, repo: GITHUB_REPO, tag,
+    });
+    const asset = release.assets.find((a) => a.name === filename);
+    if (asset) {
+      await octokit.repos.deleteReleaseAsset({
+        owner: GITHUB_OWNER, repo: GITHUB_REPO, asset_id: asset.id,
+      });
+    }
+  } catch {
+    // Release doesn't exist, ignore
+  }
+}
+
 export async function uploadZipToGithub(filePath: string, slug: string, version: string) {
+  if (OVERSIZED_SLUGS.has(slug)) {
+    await uploadOversizedReleaseAsset(filePath, slug, version);
+    return;
+  }
+
   const filename = `${slug}-${version}.zip`;
   const path = `${slug}/${filename}`;
   const content = readFileSync(filePath);
@@ -67,6 +124,11 @@ export async function uploadZipToGithub(filePath: string, slug: string, version:
 }
 
 export async function deleteZipFromGithub(slug: string, version: string) {
+  if (OVERSIZED_SLUGS.has(slug)) {
+    await deleteOversizedReleaseAsset(slug, version);
+    return;
+  }
+
   const filename = `${slug}-${version}.zip`;
   const path = `${slug}/${filename}`;
 
