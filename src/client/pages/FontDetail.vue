@@ -85,14 +85,15 @@
             <div
               v-for="rf in recommendFonts"
               :key="rf.slug"
-              class="w-[206px] cursor-pointer hover:bg-white rounded-lg transition"
+              class="w-[206px] cursor-pointer hover:bg-white rounded-lg transition group"
               @click="goFont(rf.slug)"
             >
-              <div class="w-[206px] h-[116px] bg-gray-100 rounded overflow-hidden mb-2">
+              <div class="w-[206px] h-[116px] bg-gray-100 rounded overflow-hidden mb-2 relative">
                 <img v-if="rf.coverPath" :src="rf.coverPath" class="w-full h-full object-cover" />
                 <div v-else class="w-full h-full flex items-center justify-center text-gray-300 text-2xl font-bold">
                   {{ (rf.nameZh || rf.nameEn || '?')[0] }}
                 </div>
+                <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300" />
               </div>
               <p class="text-xs font-medium text-gray-900 truncate">{{ rf.nameZh || rf.nameEn || rf.slug }}</p>
               <p class="text-xs text-gray-500 truncate">{{ rf.vendor }}</p>
