@@ -29,7 +29,6 @@ export interface FontListParams {
 export interface DownloadUrls {
   githubRaw: string;
   jsdelivr: string;
-  ghproxy?: string;
   cloudDrive?: string;
 }
 

@@ -13,7 +13,6 @@ export function computeDownloadUrls(slug: string, version: string, cloudDriveUrl
     return {
       githubRaw: releaseUrl,
       jsdelivr: releaseUrl,
-      ghproxy: releaseUrl,
       ...(cloudDriveUrl ? { cloudDrive: cloudDriveUrl } : {}),
     };
   }
@@ -23,7 +22,6 @@ export function computeDownloadUrls(slug: string, version: string, cloudDriveUrl
   return {
     githubRaw: rawUrl,
     jsdelivr: `https://cdn.jsdelivr.net/gh/${GITHUB_OWNER}/${GITHUB_REPO}@${RELEASES_BRANCH}/${path}`,
-    ghproxy: `https://ghproxy.com/${rawUrl}`,
     ...(cloudDriveUrl ? { cloudDrive: cloudDriveUrl } : {}),
   };
 }
