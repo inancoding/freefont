@@ -165,12 +165,23 @@ function onStatusChange() {
   load();
 }
 
-function downloadTemplate() {
-  const url = adminApi.getImportTemplate();
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'font-import-template.xlsx';
-  a.click();
+async function downloadTemplate() {
+  try {
+    const token = localStorage.getItem('admin_token');
+    const res = await fetch('/api/admin/fonts/import/template', {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) throw new Error('下载失败');
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'font-import-template.xlsx';
+    a.click();
+    URL.revokeObjectURL(url);
+  } catch {
+    ElMessage.error('模板下载失败');
+  }
 }
 
 async function onImportFileChange(file: UploadFile) {
