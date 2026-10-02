@@ -75,7 +75,7 @@ uploadRouter.post('/zip', uploadZip.single('file'), async (req, res, next) => {
     await uploadZipToGithub(file.path, slug, version);
     unlinkSync(file.path);
 
-    const downloadUrls = computeDownloadUrls(slug, version);
+    const downloadUrls = computeDownloadUrls(slug, version, fileSize);
     res.json({
       success: true,
       data: {

@@ -116,8 +116,8 @@
             <div>
               <h4 class="text-white font-medium mb-3">联系我们</h4>
               <ul class="space-y-2 text-sm text-gray-400">
-                <li>邮箱：contact@freefont.com</li>
-                <li>GitHub：<a href="#" class="hover:text-white transition-colors">free-font</a></li>
+                <!-- <li>邮箱：contact@freefont.com</li> -->
+                <li>GitHub：<a href="https://github.com/inancoding/freefont" target="_blank" rel="noopener noreferrer" class="hover:text-white transition-colors">free-font</a></li>
               </ul>
             </div>
           </div>

@@ -120,7 +120,7 @@ const downloadUrls = ref<DownloadUrls | null>(null);
 const recommendFonts = ref<FontListItem[]>([]);
 
 function downloadLabel(key: string): string {
-  const map: Record<string, string> = { githubRaw: '下载链接1', jsdelivr: '下载链接2', cloudDrive: '百度网盘下载' };
+  const map: Record<string, string> = { githubRaw: 'GitHub 下载', jsdelivr: 'jsdelivr CDN', cloudDrive: '百度网盘下载' };
   return map[key] || key;
 }
 

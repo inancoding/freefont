@@ -2,26 +2,29 @@ const GITHUB_OWNER = process.env.GITHUB_OWNER || 'inancoding';
 const GITHUB_REPO = process.env.GITHUB_REPO || 'freefont';
 const RELEASES_BRANCH = 'releases';
 
-const OVERSIZED_SLUGS = new Set(['source-han-seri']);
+const JSDELIVR_LIMIT = 20 * 1024 * 1024;
+const GITHUB_CONTENT_LIMIT = 100 * 1024 * 1024;
 
-export function computeDownloadUrls(slug: string, version: string, cloudDriveUrl?: string | null) {
+export function computeDownloadUrls(slug: string, version: string, fileSize?: number | null, cloudDriveUrl?: string | null) {
   const artifact = `${slug}-${version}.zip`;
+  const cloud = cloudDriveUrl ? { cloudDrive: cloudDriveUrl } : {};
 
-  if (OVERSIZED_SLUGS.has(slug)) {
+  if (fileSize && fileSize > GITHUB_CONTENT_LIMIT) {
     const tag = `${slug}-v${version}`;
     const releaseUrl = `https://github.com/${GITHUB_OWNER}/${GITHUB_REPO}/releases/download/${tag}/${artifact}`;
-    return {
-      githubRaw: releaseUrl,
-      jsdelivr: releaseUrl,
-      ...(cloudDriveUrl ? { cloudDrive: cloudDriveUrl } : {}),
-    };
+    return { githubRaw: releaseUrl, jsdelivr: releaseUrl, ...cloud };
   }
 
   const path = `${slug}/${artifact}`;
-  const rawUrl = `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/${RELEASES_BRANCH}/${path}`;
+  const githubRaw = `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/${RELEASES_BRANCH}/${path}`;
+
+  if (fileSize && fileSize > JSDELIVR_LIMIT) {
+    return { githubRaw, ...cloud };
+  }
+
   return {
-    githubRaw: rawUrl,
+    githubRaw,
     jsdelivr: `https://cdn.jsdelivr.net/gh/${GITHUB_OWNER}/${GITHUB_REPO}@${RELEASES_BRANCH}/${path}`,
-    ...(cloudDriveUrl ? { cloudDrive: cloudDriveUrl } : {}),
+    ...cloud,
   };
 }

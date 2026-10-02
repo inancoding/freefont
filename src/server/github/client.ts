@@ -1,11 +1,11 @@
 import { Octokit } from '@octokit/rest';
-import { readFileSync } from 'node:fs';
+import { readFileSync, statSync } from 'node:fs';
 
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN || '';
 const GITHUB_OWNER = process.env.GITHUB_OWNER || 'inancoding';
 const GITHUB_REPO = process.env.GITHUB_REPO || 'freefont';
 const RELEASES_BRANCH = 'releases';
-const OVERSIZED_SLUGS = new Set(['source-han-seri']);
+const GITHUB_CONTENT_LIMIT = 100 * 1024 * 1024;
 
 const octokit = new Octokit({ auth: GITHUB_TOKEN });
 
@@ -83,7 +83,8 @@ async function deleteOversizedReleaseAsset(slug: string, version: string) {
 }
 
 export async function uploadZipToGithub(filePath: string, slug: string, version: string) {
-  if (OVERSIZED_SLUGS.has(slug)) {
+  const fileSize = statSync(filePath).size;
+  if (fileSize > GITHUB_CONTENT_LIMIT) {
     await uploadOversizedReleaseAsset(filePath, slug, version);
     return;
   }
@@ -123,8 +124,8 @@ export async function uploadZipToGithub(filePath: string, slug: string, version:
   await octokit.repos.createOrUpdateFileContents(params as any);
 }
 
-export async function deleteZipFromGithub(slug: string, version: string) {
-  if (OVERSIZED_SLUGS.has(slug)) {
+export async function deleteZipFromGithub(slug: string, version: string, fileSize?: number | null) {
+  if (fileSize && fileSize > GITHUB_CONTENT_LIMIT) {
     await deleteOversizedReleaseAsset(slug, version);
     return;
   }
