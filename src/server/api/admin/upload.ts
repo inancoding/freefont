@@ -53,7 +53,7 @@ const uploadImage = multer({
 export const uploadRouter = Router();
 uploadRouter.use(authenticateToken);
 
-uploadRouter.post('/zip', uploadZip.single('file'), async (req, res, next) => {
+uploadRouter.post('/zip', uploadZip.single('file'), async (req, res) => {
   const file = req.file;
   if (!file) {
     res.status(400).json({ success: false, error: 'No file uploaded' });
@@ -86,7 +86,8 @@ uploadRouter.post('/zip', uploadZip.single('file'), async (req, res, next) => {
     });
   } catch (err) {
     if (existsSync(file.path)) unlinkSync(file.path);
-    next(err);
+    const msg = err instanceof Error ? err.message : String(err);
+    res.status(502).json({ success: false, error: `GitHub 上传失败: ${msg}` });
   }
 });
 
