@@ -13,8 +13,8 @@ const GITHUB_CONTENT_LIMIT = 100 * 1024 * 1024;
 // Persistent shallow clone used to commit ZIPs onto the releases branch via git
 // push. The Contents API is unreliable from this server's egress (large bodies
 // hang ~160s then 401), but the git smart-HTTP channel to github.com is clean.
-// Kept as a sibling of the app dir so redeploying dist doesn't wipe it.
-const WORK_DIR = process.env.RELEASES_WORK_DIR || join(process.cwd(), '..', 'freefont-releases-work');
+// Lives under the app's writable tmp/ dir (the app root's parent may be root-owned).
+const WORK_DIR = process.env.RELEASES_WORK_DIR || join(process.cwd(), 'tmp', 'releases-work');
 
 const AUTH_URL = `https://${GITHUB_OWNER}:${GITHUB_TOKEN}@github.com/${GITHUB_OWNER}/${GITHUB_REPO}.git`;
 const PLAIN_URL = `https://github.com/${GITHUB_OWNER}/${GITHUB_REPO}.git`;
