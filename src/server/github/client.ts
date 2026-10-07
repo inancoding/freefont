@@ -1,5 +1,5 @@
 import { Octokit } from '@octokit/rest';
-import { readFileSync, statSync, existsSync, mkdirSync, copyFileSync, rmSync } from 'node:fs';
+import { readFileSync, statSync, existsSync, mkdirSync, rmSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
@@ -43,40 +43,58 @@ function serialize<T>(fn: () => Promise<T>): Promise<T> {
   return result;
 }
 
+const COMMIT_IDENTITY = ['-c', 'user.email=bot@freefont.local', '-c', 'user.name=freefont-bot'];
+
+// Blobless partial clone: fetches commits + trees but NOT existing ZIP blobs, so
+// setup is near-instant regardless of how much the releases branch has amassed.
 async function ensureRepo() {
-  if (existsSync(join(WORK_DIR, '.git'))) return;
-  rmSync(WORK_DIR, { recursive: true, force: true });
+  if (existsSync(join(WORK_DIR, '.git'))) {
+    try {
+      await git(['-C', WORK_DIR, 'rev-parse', '--git-dir']);
+      return;
+    } catch {
+      rmSync(WORK_DIR, { recursive: true, force: true }); // corrupt/partial clone
+    }
+  }
   mkdirSync(dirname(WORK_DIR), { recursive: true });
   try {
-    await git(['clone', '--depth', '1', '--branch', RELEASES_BRANCH, AUTH_URL, WORK_DIR]);
+    await git(['clone', '--no-checkout', '--depth', '1', '--filter=blob:none', '--branch', RELEASES_BRANCH, AUTH_URL, WORK_DIR]);
   } catch {
-    // releases branch doesn't exist yet — bootstrap it from the default branch.
+    // releases branch doesn't exist yet — bootstrap an empty one, then clone it.
     rmSync(WORK_DIR, { recursive: true, force: true });
-    await git(['clone', '--depth', '1', AUTH_URL, WORK_DIR]);
-    await git(['-C', WORK_DIR, 'checkout', '-B', RELEASES_BRANCH]);
-    await git(['-C', WORK_DIR, 'push', AUTH_URL, `${RELEASES_BRANCH}:${RELEASES_BRANCH}`]);
+    mkdirSync(WORK_DIR, { recursive: true });
+    await git(['-C', WORK_DIR, 'init', '-q']);
+    const { stdout: emptyTree } = await git(['-C', WORK_DIR, 'mktree']);
+    const { stdout: initCommit } = await git(['-C', WORK_DIR, ...COMMIT_IDENTITY, 'commit-tree', emptyTree.trim(), '-m', 'init releases']);
+    await git(['-C', WORK_DIR, 'push', AUTH_URL, `${initCommit.trim()}:refs/heads/${RELEASES_BRANCH}`]);
+    rmSync(WORK_DIR, { recursive: true, force: true });
+    await git(['clone', '--no-checkout', '--depth', '1', '--filter=blob:none', '--branch', RELEASES_BRANCH, AUTH_URL, WORK_DIR]);
   }
   // Never persist the token in .git/config; pass AUTH_URL per-command instead.
   await git(['-C', WORK_DIR, 'remote', 'set-url', 'origin', PLAIN_URL]);
 }
 
+// Builds a commit on top of the releases tip using plumbing only (no checkout),
+// so existing ZIPs are never downloaded — we upload just the one new blob.
 async function pushToReleasesBranch(filePath: string, slug: string, version: string) {
   await ensureRepo();
-  await git(['-C', WORK_DIR, 'fetch', '--depth', '1', AUTH_URL, RELEASES_BRANCH]);
-  await git(['-C', WORK_DIR, 'checkout', '-B', RELEASES_BRANCH, 'FETCH_HEAD']);
+  rmSync(join(WORK_DIR, '.git', 'index.lock'), { force: true }); // clear stale lock
+  await git(['-C', WORK_DIR, 'fetch', '--depth', '1', '--filter=blob:none', AUTH_URL, RELEASES_BRANCH]);
 
   const relPath = `${slug}/${slug}-${version}.zip`;
-  mkdirSync(join(WORK_DIR, slug), { recursive: true });
-  copyFileSync(filePath, join(WORK_DIR, relPath));
+  const { stdout: blobSha } = await git(['-C', WORK_DIR, 'hash-object', '-w', '-t', 'blob', '--', filePath]);
 
-  await git(['-C', WORK_DIR, 'add', '--', relPath]);
-  await git([
-    '-C', WORK_DIR,
-    '-c', 'user.email=bot@freefont.local',
-    '-c', 'user.name=freefont-bot',
-    'commit', '-m', `Upload ${slug} v${version}`,
+  await git(['-C', WORK_DIR, 'read-tree', 'FETCH_HEAD']);
+  await git(['-C', WORK_DIR, 'update-index', '--add', '--cacheinfo', `100644,${blobSha.trim()},${relPath}`]);
+  const { stdout: treeSha } = await git(['-C', WORK_DIR, 'write-tree']);
+  const { stdout: commitSha } = await git([
+    '-C', WORK_DIR, ...COMMIT_IDENTITY,
+    'commit-tree', treeSha.trim(), '-p', 'FETCH_HEAD', '-m', `Upload ${slug} v${version}`,
   ]);
-  await git(['-C', WORK_DIR, 'push', AUTH_URL, `${RELEASES_BRANCH}:${RELEASES_BRANCH}`]);
+  await git(['-C', WORK_DIR, 'push', AUTH_URL, `${commitSha.trim()}:refs/heads/${RELEASES_BRANCH}`]);
+
+  // The pushed commit is only referenced by FETCH_HEAD, so prune the local blob.
+  await git(['-C', WORK_DIR, 'gc', '--prune=now', '--quiet']).catch(() => {});
 }
 
 async function uploadOversizedReleaseAsset(filePath: string, slug: string, version: string) {
