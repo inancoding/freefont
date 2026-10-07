@@ -72,10 +72,10 @@ uploadRouter.post('/zip', uploadZip.single('file'), async (req, res) => {
     const sha256 = createHash('sha256').update(content).digest('hex');
     const fileSize = content.length;
 
-    const assetUrl = await uploadZipToGithub(file.path, slug, version);
+    await uploadZipToGithub(file.path, slug, version);
     unlinkSync(file.path);
 
-    const downloadUrls = computeDownloadUrls(slug, version, fileSize, null, assetUrl);
+    const downloadUrls = computeDownloadUrls(slug, version, fileSize);
     res.json({
       success: true,
       data: {

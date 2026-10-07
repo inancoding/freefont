@@ -3,39 +3,27 @@ const GITHUB_REPO = process.env.GITHUB_REPO || 'freefont';
 const RELEASES_BRANCH = 'releases';
 
 const JSDELIVR_LIMIT = 20 * 1024 * 1024;
+const GITHUB_CONTENT_LIMIT = 100 * 1024 * 1024;
 
-// downloadUrl is the canonical GitHub URL stored on the font record:
-//   - Release Asset  -> https://github.com/{owner}/{repo}/releases/download/{tag}/{artifact}
-//   - releases branch -> https://raw.githubusercontent.com/{owner}/{repo}/releases/{slug}/{artifact}
-// Download links are generated from wherever the file actually lives, so legacy
-// branch-stored fonts keep working while new asset uploads get the asset URL.
-export function computeDownloadUrls(
-  slug: string,
-  version: string,
-  fileSize?: number | null,
-  cloudDriveUrl?: string | null,
-  downloadUrl?: string | null,
-) {
+export function computeDownloadUrls(slug: string, version: string, fileSize?: number | null, cloudDriveUrl?: string | null) {
   const artifact = `${slug}-${version}.zip`;
   const cloud = cloudDriveUrl ? { cloudDrive: cloudDriveUrl } : {};
 
-  const resolved =
-    downloadUrl ||
-    `https://github.com/${GITHUB_OWNER}/${GITHUB_REPO}/releases/download/${slug}-v${version}/${artifact}`;
-
-  // Release Assets cannot be served by jsDelivr, so only the direct URL is offered.
-  if (resolved.includes('/releases/download/')) {
-    return { githubRaw: resolved, ...cloud };
+  if (fileSize && fileSize > GITHUB_CONTENT_LIMIT) {
+    const tag = `${slug}-v${version}`;
+    const releaseUrl = `https://github.com/${GITHUB_OWNER}/${GITHUB_REPO}/releases/download/${tag}/${artifact}`;
+    return { githubRaw: releaseUrl, jsdelivr: releaseUrl, ...cloud };
   }
 
-  // Legacy: file lives on the `releases` git branch and can be mirrored by jsDelivr.
   const path = `${slug}/${artifact}`;
+  const githubRaw = `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/${RELEASES_BRANCH}/${path}`;
+
   if (fileSize && fileSize > JSDELIVR_LIMIT) {
-    return { githubRaw: resolved, ...cloud };
+    return { githubRaw, ...cloud };
   }
 
   return {
-    githubRaw: resolved,
+    githubRaw,
     jsdelivr: `https://cdn.jsdelivr.net/gh/${GITHUB_OWNER}/${GITHUB_REPO}@${RELEASES_BRANCH}/${path}`,
     ...cloud,
   };

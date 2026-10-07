@@ -45,7 +45,7 @@ fontRouter.get('/:slug/download-urls', async (req, res, next) => {
       res.status(404).json({ success: false, error: 'Font not found' });
       return;
     }
-    const urls = computeDownloadUrls(font.slug, font.version, font.fileSize, font.cloudDriveUrl, font.downloadUrl);
+    const urls = computeDownloadUrls(font.slug, font.version, font.fileSize, font.cloudDriveUrl);
     res.json({ success: true, data: urls });
   } catch (err) {
     next(err);
